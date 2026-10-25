@@ -1,0 +1,74 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: lrcmis-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: lrcmis
+      POSTGRES_USER: lrcmis
+      POSTGRES_PASSWORD: lrcmis
+    ports:
+      - "5433:5432"
+    volumes:
+      - lrcmis_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lrcmis -d lrcmis"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: lrcmis-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgresql://lrcmis:lrcmis@db:5432/lrcmis?schema=public
+      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-random-secret-at-least-32-characters}
+      JWT_EXPIRES_IN: 8h
+      CLIENT_ORIGIN: http://localhost:8080
+      COOKIE_SECURE: "false"
+      BUSINESS_TIMEZONE: Asia/Jakarta
+      MIN_WEIGHT_KG: "3"
+      WEIGHT_ROUNDING_KG: "0.5"
+      DEFAULT_DELIVERY_FEE: "5000"
+      RESERVATION_CANCEL_CUTOFF_HOURS: "2"
+      EXPOSE_RESET_TOKEN: "false"
+      RUN_SEED: ${RUN_SEED:-true}
+    ports:
+      - "4000:4000"
+
+  web:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    container_name: lrcmis-web
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "8080:80"
+
+  # One-off reference-data refresh: docker compose run --rm seed
+  seed:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    profiles: ["tools"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://lrcmis:lrcmis@db:5432/lrcmis?schema=public
+      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-random-secret-at-least-32-characters}
+    entrypoint: ["sh", "-c", "npx prisma migrate deploy --schema ./prisma/schema.prisma && npx prisma db seed"]
+
+volumes:
+  lrcmis_pgdata:

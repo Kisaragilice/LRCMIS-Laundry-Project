@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+dist
+**/dist
+.git
+.gitignore
+.env
+**/.env
+coverage
+*.log
+client/.vite
+server/prisma/*.db

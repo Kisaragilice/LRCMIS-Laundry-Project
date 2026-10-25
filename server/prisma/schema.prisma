@@ -1,0 +1,617 @@
+// LRCMIS – Prisma schema
+// Money is NUMERIC(12,2); primary keys are UUID; timestamps are TIMESTAMPTZ.
+// Additions beyond the specification are marked with "EXT:" and documented in README.md.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PickupType {
+  drop_off
+  pickup
+}
+
+enum ReservationStatus {
+  pending
+  confirmed
+  cancelled
+  expired
+}
+
+enum PricingUnit {
+  kg
+  piece
+  pair
+}
+
+enum OrderStatus {
+  pending
+  received
+  washing
+  drying
+  ironing
+  packaging
+  ready
+  delivering
+  completed
+  cancelled
+  on_hold
+}
+
+enum PaymentStatus {
+  unpaid
+  partial
+  paid
+  refunded
+}
+
+enum PaymentMethod {
+  cash
+  bank_transfer
+  payment_gateway
+}
+
+enum PaymentRecordStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
+enum TaskType {
+  pickup
+  delivery
+}
+
+enum TaskStatus {
+  assigned
+  accepted
+  in_progress
+  completed
+  failed
+}
+
+enum DiscountType {
+  percentage
+  fixed
+}
+
+enum NotificationChannel {
+  in_app
+  email
+  whatsapp
+}
+
+enum NotificationStatus {
+  queued
+  sent
+  failed
+  read
+}
+
+enum ComplaintStatus {
+  open
+  in_progress
+  resolved
+  closed
+}
+
+enum ComplaintPriority {
+  low
+  normal
+  high
+}
+
+enum ChatConversationType {
+  admin_customer
+  admin_staff
+  admin_courier
+  courier_customer
+}
+
+model User {
+  id             String    @id @default(uuid()) @db.Uuid
+  name           String    @db.VarChar(100)
+  email          String    @unique @db.VarChar(150)
+  passwordHash   String    @map("password_hash")
+  phone          String?   @db.VarChar(20)
+  isActive       Boolean   @default(true) @map("is_active")
+  // Protected, single primary administrator. Guarded by the API and database
+  // triggers; it must not be changed by ordinary account-management flows.
+  isPrimaryAdmin Boolean   @default(false) @map("is_primary_admin")
+  // Soft deletion preserves orders, payments, audit logs and other history.
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(3)
+  deletedBy      String?   @map("deleted_by") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  roles               UserRole[]
+  addresses           Address[]
+  reservations        Reservation[]         @relation("CustomerReservations")
+  orders              Order[]               @relation("CustomerOrders")
+  assignedOrders      Order[]               @relation("AssignedStaff")
+  statusChanges       OrderStatusHistory[]
+  notes               OrderNote[]
+  recordedPayments    Payment[]             @relation("RecordedPayments")
+  verifiedPayments    Payment[]             @relation("VerifiedPayments")
+  deliveryTasks       DeliveryTask[]
+  redemptions         PromotionRedemption[]
+  notifications       Notification[]
+  reviews             Review[]
+  auditLogs           AuditLog[]
+  passwordResetTokens PasswordResetToken[]
+  complaints          Complaint[]
+  complaintFollowUps  ComplaintFollowUp[]
+  chatSubjects        ChatConversation[]    @relation("ChatConversationsSubject")
+  chatAsCustomer      ChatConversation[]    @relation("ChatConversationsCustomer")
+  chatAsCourier       ChatConversation[]    @relation("ChatConversationsCourier")
+  chatMessages        ChatMessage[]         @relation("ChatMessageSender")
+  chatReads           ChatRead[]
+
+  @@index([createdAt])
+  @@index([isPrimaryAdmin])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Role {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String     @unique @db.VarChar(50)
+  description String?
+  users       UserRole[]
+
+  @@map("roles")
+}
+
+model UserRole {
+  userId String @map("user_id") @db.Uuid
+  roleId String @map("role_id") @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@unique([userId, roleId])
+  @@index([roleId])
+  @@map("user_roles")
+}
+
+model Address {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  label         String?  @db.VarChar(50)
+  recipientName String?  @map("recipient_name") @db.VarChar(100)
+  phone         String?  @db.VarChar(20)
+  addressText   String   @map("address_text")
+  latitude      Decimal? @db.Decimal(10, 7)
+  longitude     Decimal? @db.Decimal(10, 7)
+  isDefault     Boolean  @default(false) @map("is_default")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+model TimeSlot {
+  id          String   @id @default(uuid()) @db.Uuid
+  slotDate    DateTime @map("slot_date") @db.Date
+  startTime   DateTime @map("start_time") @db.Time(0)
+  endTime     DateTime @map("end_time") @db.Time(0)
+  capacity    Int      @default(0)
+  isAvailable Boolean  @default(true) @map("is_available")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  reservations Reservation[]
+
+  @@unique([slotDate, startTime])
+  @@index([slotDate, isAvailable])
+  @@map("time_slots")
+}
+
+model Reservation {
+  id              String            @id @default(uuid()) @db.Uuid
+  reservationCode String            @unique @map("reservation_code") @db.VarChar(30)
+  customerId      String            @map("customer_id") @db.Uuid
+  timeSlotId      String            @map("time_slot_id") @db.Uuid
+  addressId       String?           @map("address_id") @db.Uuid
+  pickupType      PickupType        @map("pickup_type")
+  notes           String?
+  status          ReservationStatus @default(pending)
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  customer User              @relation("CustomerReservations", fields: [customerId], references: [id], onDelete: Restrict)
+  timeSlot TimeSlot          @relation(fields: [timeSlotId], references: [id], onDelete: Restrict)
+  address  Address?          @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  items    ReservationItem[]
+  order    Order?
+
+  @@index([timeSlotId, status])
+  @@index([customerId])
+  @@index([status])
+  @@map("reservations")
+}
+
+// EXT: the specification requires customers to choose services for a reservation,
+// but the reservations table has no service relation.
+model ReservationItem {
+  id            String  @id @default(uuid()) @db.Uuid
+  reservationId String  @map("reservation_id") @db.Uuid
+  serviceId     String  @map("service_id") @db.Uuid
+  quantity      Decimal @default(1) @db.Decimal(10, 2)
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  service     Service     @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@unique([reservationId, serviceId])
+  @@map("reservation_items")
+}
+
+model Service {
+  id             String      @id @default(uuid()) @db.Uuid
+  name           String      @db.VarChar(100)
+  description    String?
+  price          Decimal     @db.Decimal(12, 2)
+  pricingUnit    PricingUnit @map("pricing_unit")
+  estimatedHours Int?        @map("estimated_hours")
+  isActive       Boolean     @default(true) @map("is_active")
+  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  orderItems       OrderItem[]
+  reservationItems ReservationItem[]
+
+  @@index([isActive])
+  @@map("services")
+}
+
+model Order {
+  id              String        @id @default(uuid()) @db.Uuid
+  orderCode       String        @unique @map("order_code") @db.VarChar(30)
+  reservationId   String?       @unique @map("reservation_id") @db.Uuid
+  customerId      String        @map("customer_id") @db.Uuid
+  assignedStaffId String?       @map("assigned_staff_id") @db.Uuid
+  actualWeight    Decimal?      @map("actual_weight") @db.Decimal(8, 2)
+  subtotal        Decimal       @default(0) @db.Decimal(12, 2)
+  discountAmount  Decimal       @default(0) @map("discount_amount") @db.Decimal(12, 2)
+  deliveryFee     Decimal       @default(0) @map("delivery_fee") @db.Decimal(12, 2)
+  totalAmount     Decimal       @default(0) @map("total_amount") @db.Decimal(12, 2)
+  paymentStatus   PaymentStatus @default(unpaid) @map("payment_status")
+  orderStatus     OrderStatus   @default(pending) @map("order_status")
+  notes           String?
+  receivedAt      DateTime?     @map("received_at") @db.Timestamptz(3)
+  completedAt     DateTime?     @map("completed_at") @db.Timestamptz(3)
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  reservation      Reservation?          @relation(fields: [reservationId], references: [id], onDelete: Restrict)
+  customer         User                  @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Restrict)
+  assignedStaff    User?                 @relation("AssignedStaff", fields: [assignedStaffId], references: [id], onDelete: SetNull)
+  items            OrderItem[]
+  statusHistory    OrderStatusHistory[]
+  payments         Payment[]
+  deliveryTasks    DeliveryTask[]
+  redemptions      PromotionRedemption[]
+  notifications    Notification[]
+  review           Review?
+  orderNotes       OrderNote[]
+  complaints       Complaint[]
+  chatConversation ChatConversation?
+
+  @@index([customerId])
+  @@index([orderStatus])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@index([assignedStaffId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                  String      @id @default(uuid()) @db.Uuid
+  orderId             String      @map("order_id") @db.Uuid
+  serviceId           String      @map("service_id") @db.Uuid
+  serviceNameSnapshot String      @map("service_name_snapshot") @db.VarChar(100)
+  priceSnapshot       Decimal     @map("price_snapshot") @db.Decimal(12, 2)
+  quantity            Decimal     @db.Decimal(10, 2)
+  unit                PricingUnit
+  lineTotal           Decimal     @map("line_total") @db.Decimal(12, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@unique([orderId, serviceId])
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model OrderStatusHistory {
+  id        String       @id @default(uuid()) @db.Uuid
+  orderId   String       @map("order_id") @db.Uuid
+  oldStatus OrderStatus? @map("old_status")
+  newStatus OrderStatus  @map("new_status")
+  changedBy String?      @map("changed_by") @db.Uuid
+  notes     String?
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [changedBy], references: [id], onDelete: SetNull)
+
+  @@index([orderId, createdAt])
+  @@map("order_status_history")
+}
+
+// EXT: operational notes that are not status transitions.
+model OrderNote {
+  id        String   @id @default(uuid()) @db.Uuid
+  orderId   String   @map("order_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  note      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([orderId, createdAt])
+  @@map("order_notes")
+}
+
+model Payment {
+  id             String              @id @default(uuid()) @db.Uuid
+  orderId        String              @map("order_id") @db.Uuid
+  amount         Decimal             @db.Decimal(12, 2)
+  method         PaymentMethod
+  status         PaymentRecordStatus @default(pending)
+  referenceCode  String?             @map("reference_code") @db.VarChar(100)
+  // EXT: idempotency guard against retried payment requests.
+  idempotencyKey String?             @unique @map("idempotency_key") @db.VarChar(120)
+  recordedBy     String?             @map("recorded_by") @db.Uuid
+  verifiedBy     String?             @map("verified_by") @db.Uuid
+  verifiedAt     DateTime?           @map("verified_at") @db.Timestamptz(3)
+  paidAt         DateTime?           @map("paid_at") @db.Timestamptz(3)
+  refundedAt     DateTime?           @map("refunded_at") @db.Timestamptz(3)
+  refundNote     String?             @map("refund_note")
+  notes          String?
+  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  order          Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  recordedByUser User? @relation("RecordedPayments", fields: [recordedBy], references: [id], onDelete: SetNull)
+  verifiedByUser User? @relation("VerifiedPayments", fields: [verifiedBy], references: [id], onDelete: SetNull)
+
+  @@unique([orderId, referenceCode])
+  @@index([orderId, status])
+  @@index([paidAt])
+  @@map("payments")
+}
+
+model DeliveryTask {
+  id                  String     @id @default(uuid()) @db.Uuid
+  orderId             String     @map("order_id") @db.Uuid
+  courierId           String?    @map("courier_id") @db.Uuid
+  taskType            TaskType   @map("task_type")
+  status              TaskStatus @default(assigned)
+  scheduledAt         DateTime   @map("scheduled_at") @db.Timestamptz(3)
+  completedAt         DateTime?  @map("completed_at") @db.Timestamptz(3)
+  // EXT: address/contact snapshot so later edits do not alter dispatched task data.
+  addressSnapshot     String?    @map("address_snapshot")
+  contactPhone        String?    @map("contact_phone") @db.VarChar(20)
+  handoverRecipient   String?    @map("handover_recipient") @db.VarChar(100)
+  handoverConfirmedAt DateTime?  @map("handover_confirmed_at") @db.Timestamptz(3)
+  notes               String?
+  createdAt           DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  courier User? @relation(fields: [courierId], references: [id], onDelete: SetNull)
+
+  @@index([courierId, status])
+  @@index([orderId])
+  @@index([status])
+  @@map("delivery_tasks")
+}
+
+model Promotion {
+  id            String       @id @default(uuid()) @db.Uuid
+  code          String       @unique @db.VarChar(50)
+  discountType  DiscountType @map("discount_type")
+  discountValue Decimal      @map("discount_value") @db.Decimal(12, 2)
+  minPurchase   Decimal      @default(0) @map("min_purchase") @db.Decimal(12, 2)
+  // EXT: caps percentage discounts and limits use per customer.
+  maxDiscount   Decimal?     @map("max_discount") @db.Decimal(12, 2)
+  perUserLimit  Int          @default(1) @map("per_user_limit")
+  startAt       DateTime     @map("start_at") @db.Timestamptz(3)
+  endAt         DateTime     @map("end_at") @db.Timestamptz(3)
+  usageLimit    Int?         @map("usage_limit")
+  isActive      Boolean      @default(true) @map("is_active")
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  redemptions PromotionRedemption[]
+
+  @@index([isActive, startAt, endAt])
+  @@map("promotions")
+}
+
+model PromotionRedemption {
+  id             String   @id @default(uuid()) @db.Uuid
+  promotionId    String   @map("promotion_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  orderId        String   @unique @map("order_id") @db.Uuid
+  discountAmount Decimal  @map("discount_amount") @db.Decimal(12, 2)
+  redeemedAt     DateTime @default(now()) @map("redeemed_at") @db.Timestamptz(3)
+
+  promotion Promotion @relation(fields: [promotionId], references: [id], onDelete: Restrict)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  @@unique([promotionId, orderId])
+  @@index([userId, promotionId])
+  @@map("promotion_redemptions")
+}
+
+model Notification {
+  id        String              @id @default(uuid()) @db.Uuid
+  userId    String              @map("user_id") @db.Uuid
+  orderId   String?             @map("order_id") @db.Uuid
+  title     String              @default("Notifikasi LRCMIS") @db.VarChar(150)
+  channel   NotificationChannel @default(in_app)
+  message   String
+  status    NotificationStatus  @default(queued)
+  sentAt    DateTime?           @map("sent_at") @db.Timestamptz(3)
+  readAt    DateTime?           @map("read_at") @db.Timestamptz(3)
+  createdAt DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status, createdAt])
+  @@map("notifications")
+}
+
+// EXT: direct operational chat. Admin threads are shared by all administrators;
+// courier-customer threads are tied to one delivery order.
+model ChatConversation {
+  id            String               @id @default(uuid()) @db.Uuid
+  type          ChatConversationType
+  // Non-admin participant for admin_customer/admin_staff/admin_courier threads.
+  subjectUserId String?              @map("subject_user_id") @db.Uuid
+  customerId    String?              @map("customer_id") @db.Uuid
+  courierId     String?              @map("courier_id") @db.Uuid
+  orderId       String?              @unique @map("order_id") @db.Uuid
+  createdAt     DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  subjectUser User?         @relation("ChatConversationsSubject", fields: [subjectUserId], references: [id], onDelete: Cascade)
+  customer    User?         @relation("ChatConversationsCustomer", fields: [customerId], references: [id], onDelete: Cascade)
+  courier     User?         @relation("ChatConversationsCourier", fields: [courierId], references: [id], onDelete: Cascade)
+  order       Order?        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  messages    ChatMessage[]
+  reads       ChatRead[]
+
+  @@unique([type, subjectUserId])
+  @@index([type, updatedAt])
+  @@index([customerId])
+  @@index([courierId])
+  @@map("chat_conversations")
+}
+
+model ChatMessage {
+  id             String   @id @default(uuid()) @db.Uuid
+  conversationId String   @map("conversation_id") @db.Uuid
+  senderId       String   @map("sender_id") @db.Uuid
+  body           String   @db.VarChar(2000)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  conversation ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User             @relation("ChatMessageSender", fields: [senderId], references: [id], onDelete: Restrict)
+
+  @@index([conversationId, createdAt])
+  @@map("chat_messages")
+}
+
+model ChatRead {
+  conversationId String   @map("conversation_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  lastReadAt     DateTime @default(now()) @map("last_read_at") @db.Timestamptz(3)
+
+  conversation ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([conversationId, userId])
+  @@index([userId])
+  @@map("chat_reads")
+}
+
+model Review {
+  id        String   @id @default(uuid()) @db.Uuid
+  orderId   String   @unique @map("order_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([rating])
+  @@map("reviews")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  action     String   @db.VarChar(100)
+  entityType String   @map("entity_type") @db.VarChar(100)
+  entityId   String?  @map("entity_id") @db.Uuid
+  metadata   Json?
+  ipAddress  String?  @map("ip_address") @db.VarChar(64)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// EXT: required by the password-reset workflow in the specification.
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@map("password_reset_tokens")
+}
+
+// EXT: the complaint module in the specification has no entity in the data dictionary.
+model Complaint {
+  id          String            @id @default(uuid()) @db.Uuid
+  code        String            @unique @db.VarChar(30)
+  customerId  String            @map("customer_id") @db.Uuid
+  orderId     String?           @map("order_id") @db.Uuid
+  subject     String            @db.VarChar(150)
+  description String
+  status      ComplaintStatus   @default(open)
+  priority    ComplaintPriority @default(normal)
+  resolution  String?
+  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  customer  User                @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  order     Order?              @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  followUps ComplaintFollowUp[]
+
+  @@index([customerId])
+  @@index([status])
+  @@map("complaints")
+}
+
+model ComplaintFollowUp {
+  id          String   @id @default(uuid()) @db.Uuid
+  complaintId String   @map("complaint_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  note        String
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  complaint Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([complaintId, createdAt])
+  @@map("complaint_follow_ups")
+}

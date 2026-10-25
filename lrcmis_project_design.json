@@ -1,0 +1,2015 @@
+{
+  "project": {
+    "name": "Laundry Reservation and Customer Management Information System",
+    "acronym": "LRCMIS",
+    "language": "id-ID",
+    "project_type": "Sistem Informasi Berbasis Web",
+    "academic_context": "Tugas kuliah Informatika",
+    "complexity": "lanjutan",
+    "platform": "website_responsif",
+    "backend": {
+      "runtime": "Node.js",
+      "framework": "Express.js",
+      "api_style": "REST",
+      "api_prefix": "/api/v1"
+    },
+    "recommended_stack": {
+      "frontend": [
+        "React",
+        "Vite"
+      ],
+      "styling": [
+        "Tailwind CSS"
+      ],
+      "backend": [
+        "Node.js",
+        "Express.js"
+      ],
+      "database": [
+        "PostgreSQL"
+      ],
+      "orm": [
+        "Prisma"
+      ],
+      "validation": [
+        "Zod"
+      ],
+      "authentication_options": [
+        "session_cookie",
+        "JWT"
+      ],
+      "password_hashing": [
+        "Argon2id",
+        "bcrypt"
+      ],
+      "testing": [
+        "Vitest",
+        "Supertest"
+      ],
+      "api_documentation": [
+        "Swagger",
+        "OpenAPI"
+      ],
+      "deployment": [
+        "Docker Compose",
+        "reverse proxy"
+      ]
+    },
+    "summary": "Sistem terintegrasi untuk mengelola reservasi laundry, pelanggan, layanan, pesanan, pembayaran, proses pengerjaan, pickup dan delivery, notifikasi, promosi, serta laporan operasional.",
+    "background": "Pencatatan manual dapat menyebabkan bentrok jadwal, kesalahan perhitungan biaya, sulitnya pelacakan pesanan, dan keterlambatan laporan. LRCMIS mengintegrasikan proses tersebut dalam satu aplikasi web.",
+    "objectives": [
+      "Memudahkan pelanggan melakukan reservasi laundry secara online.",
+      "Mengintegrasikan pengelolaan pelanggan, layanan, pesanan, dan pembayaran.",
+      "Mengatur jadwal reservasi berdasarkan kapasitas operasional.",
+      "Menyediakan pelacakan status pesanan.",
+      "Mendukung layanan pickup dan delivery.",
+      "Menyediakan laporan transaksi dan kinerja operasional."
+    ],
+    "scope": {
+      "business_model": "satu usaha laundry",
+      "responsive_web": true,
+      "payment_methods_initial": [
+        "tunai",
+        "transfer_manual"
+      ],
+      "optional_integrations": [
+        "payment_gateway",
+        "WhatsApp_API",
+        "email_provider"
+      ],
+      "excluded": [
+        "aplikasi_mobile_native",
+        "kendali_mesin_cuci_langsung"
+      ]
+    }
+  },
+  "user_roles": [
+    {
+      "name": "customer",
+      "description": "Pelanggan laundry",
+      "permissions": [
+        "register",
+        "login",
+        "manage_own_profile",
+        "manage_own_addresses",
+        "view_services",
+        "view_available_slots",
+        "create_reservation",
+        "view_own_reservations",
+        "cancel_eligible_reservation",
+        "track_own_orders",
+        "view_own_invoices",
+        "view_own_payment_history",
+        "use_promotion",
+        "review_completed_order",
+        "submit_complaint"
+      ]
+    },
+    {
+      "name": "admin",
+      "description": "Pengelola operasional",
+      "permissions": [
+        "manage_customers",
+        "manage_services",
+        "manage_prices",
+        "manage_time_slots",
+        "manage_reservations",
+        "confirm_reservations",
+        "receive_and_weigh_laundry",
+        "manage_orders",
+        "verify_manual_payments",
+        "manage_promotions",
+        "manage_complaints",
+        "assign_staff_and_couriers",
+        "view_operational_reports",
+        "export_reports"
+      ]
+    },
+    {
+      "name": "staff",
+      "description": "Petugas pengerjaan laundry",
+      "permissions": [
+        "view_assigned_orders",
+        "record_operational_notes",
+        "update_authorized_order_status",
+        "mark_order_ready"
+      ]
+    },
+    {
+      "name": "courier",
+      "description": "Petugas pickup dan delivery",
+      "permissions": [
+        "view_assigned_delivery_tasks",
+        "view_task_address",
+        "update_delivery_status",
+        "record_pickup_time",
+        "record_handover_confirmation"
+      ]
+    },
+    {
+      "name": "owner",
+      "description": "Pemilik usaha",
+      "permissions": [
+        "view_dashboard",
+        "view_revenue_reports",
+        "view_order_reports",
+        "view_popular_services",
+        "view_active_customer_metrics",
+        "view_operational_performance",
+        "export_reports"
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "name": "authentication",
+      "priority": "wajib",
+      "features": [
+        "registrasi",
+        "login",
+        "logout",
+        "reset_password"
+      ]
+    },
+    {
+      "name": "customer_management",
+      "priority": "wajib",
+      "features": [
+        "profil",
+        "alamat",
+        "riwayat_transaksi",
+        "status_akun"
+      ]
+    },
+    {
+      "name": "service_management",
+      "priority": "wajib",
+      "features": [
+        "CRUD_layanan",
+        "tarif",
+        "satuan_harga",
+        "estimasi_durasi"
+      ]
+    },
+    {
+      "name": "reservation",
+      "priority": "wajib",
+      "features": [
+        "pilih_slot",
+        "validasi_kapasitas",
+        "konfirmasi",
+        "pembatalan"
+      ]
+    },
+    {
+      "name": "order_management",
+      "priority": "wajib",
+      "features": [
+        "kode_pesanan",
+        "berat_aktual",
+        "rincian_layanan",
+        "status_pengerjaan"
+      ]
+    },
+    {
+      "name": "order_tracking",
+      "priority": "wajib",
+      "features": [
+        "timeline_status",
+        "riwayat_perubahan"
+      ]
+    },
+    {
+      "name": "payment",
+      "priority": "wajib",
+      "features": [
+        "invoice",
+        "pencatatan_pembayaran",
+        "verifikasi_transfer",
+        "refund"
+      ]
+    },
+    {
+      "name": "pickup_delivery",
+      "priority": "lanjutan",
+      "features": [
+        "penugasan_kurir",
+        "jadwal",
+        "status_perjalanan",
+        "bukti_serah_terima"
+      ]
+    },
+    {
+      "name": "promotion",
+      "priority": "lanjutan",
+      "features": [
+        "voucher",
+        "diskon",
+        "periode_aktif",
+        "batas_penggunaan"
+      ]
+    },
+    {
+      "name": "notification",
+      "priority": "lanjutan",
+      "features": [
+        "notifikasi_dalam_aplikasi",
+        "email_opsional",
+        "WhatsApp_opsional"
+      ]
+    },
+    {
+      "name": "reviews_complaints",
+      "priority": "lanjutan",
+      "features": [
+        "rating",
+        "ulasan",
+        "keluhan",
+        "tindak_lanjut"
+      ]
+    },
+    {
+      "name": "analytics_reports",
+      "priority": "wajib",
+      "features": [
+        "laporan_pendapatan",
+        "jumlah_pesanan",
+        "layanan_populer",
+        "ekspor_laporan"
+      ]
+    },
+    {
+      "name": "audit_log",
+      "priority": "lanjutan",
+      "features": [
+        "catat_aktivitas_admin",
+        "catat_perubahan_status",
+        "catat_perubahan_transaksi"
+      ]
+    }
+  ],
+  "business_rules": [
+    {
+      "id": "BR-001",
+      "rule": "Slot reservasi hanya dapat dipilih jika kapasitas masih tersedia."
+    },
+    {
+      "id": "BR-002",
+      "rule": "Validasi kapasitas harus dilakukan di backend dalam transaksi database untuk mencegah pemesanan bersamaan melebihi kapasitas."
+    },
+    {
+      "id": "BR-003",
+      "rule": "Reservasi tidak otomatis menjadi pesanan yang telah dikonfirmasi."
+    },
+    {
+      "id": "BR-004",
+      "rule": "Satu reservasi dapat menghasilkan maksimal satu pesanan."
+    },
+    {
+      "id": "BR-005",
+      "rule": "Nama layanan, tarif, dan satuan disalin ke detail pesanan sebagai snapshot transaksi."
+    },
+    {
+      "id": "BR-006",
+      "rule": "Untuk layanan berbasis berat, tagihan akhir menggunakan berat aktual yang dicatat saat cucian diterima."
+    },
+    {
+      "id": "BR-007",
+      "rule": "Voucher divalidasi di backend, termasuk masa berlaku, minimum transaksi, batas penggunaan, dan kelayakan pelanggan."
+    },
+    {
+      "id": "BR-008",
+      "rule": "Setiap perubahan status pesanan mencatat waktu, status lama, status baru, dan pengguna yang mengubahnya."
+    },
+    {
+      "id": "BR-009",
+      "rule": "Pesanan hanya dapat dinyatakan selesai jika persyaratan operasional dan pembayaran sesuai kebijakan terpenuhi."
+    },
+    {
+      "id": "BR-010",
+      "rule": "Status pembayaran dipisahkan dari status pengerjaan pesanan."
+    },
+    {
+      "id": "BR-011",
+      "rule": "Nilai uang menggunakan tipe desimal presisi tetap, bukan floating-point."
+    },
+    {
+      "id": "BR-012",
+      "rule": "Pelanggan hanya dapat mengakses data profil, reservasi, pesanan, pembayaran, dan ulasan miliknya."
+    },
+    {
+      "id": "BR-013",
+      "rule": "Pembayaran yang sama tidak boleh tercatat dua kali akibat request berulang."
+    },
+    {
+      "id": "BR-014",
+      "rule": "Pembatalan reservasi hanya diperbolehkan sesuai aturan status dan batas waktu yang ditentukan."
+    }
+  ],
+  "database": {
+    "engine": "PostgreSQL",
+    "orm": "Prisma",
+    "conventions": {
+      "primary_key": "id",
+      "primary_key_type": "UUID",
+      "timestamps": [
+        "created_at",
+        "updated_at"
+      ],
+      "timezone": "Asia/Jakarta",
+      "money_type": "NUMERIC",
+      "foreign_keys": true
+    },
+    "tables": [
+      {
+        "name": "users",
+        "purpose": "Menyimpan akun seluruh pengguna.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "name",
+            "type": "VARCHAR(100)",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "VARCHAR(150)",
+            "required": true,
+            "unique": true
+          },
+          {
+            "name": "password_hash",
+            "type": "TEXT",
+            "required": true
+          },
+          {
+            "name": "phone",
+            "type": "VARCHAR(20)"
+          },
+          {
+            "name": "is_active",
+            "type": "BOOLEAN",
+            "default": true
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "name": "updated_at",
+            "type": "TIMESTAMPTZ"
+          }
+        ]
+      },
+      {
+        "name": "roles",
+        "purpose": "Daftar peran pengguna.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "name",
+            "type": "VARCHAR(50)",
+            "unique": true
+          },
+          {
+            "name": "description",
+            "type": "TEXT"
+          }
+        ]
+      },
+      {
+        "name": "user_roles",
+        "purpose": "Tabel penghubung pengguna dan peran.",
+        "columns": [
+          {
+            "name": "user_id",
+            "type": "UUID",
+            "key": "PK/FK",
+            "references": "users.id"
+          },
+          {
+            "name": "role_id",
+            "type": "UUID",
+            "key": "PK/FK",
+            "references": "roles.id"
+          }
+        ],
+        "constraints": [
+          "UNIQUE(user_id, role_id)"
+        ]
+      },
+      {
+        "name": "addresses",
+        "purpose": "Menyimpan alamat pelanggan untuk pickup dan delivery.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "user_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "users.id"
+          },
+          {
+            "name": "label",
+            "type": "VARCHAR(50)"
+          },
+          {
+            "name": "recipient_name",
+            "type": "VARCHAR(100)"
+          },
+          {
+            "name": "phone",
+            "type": "VARCHAR(20)"
+          },
+          {
+            "name": "address_text",
+            "type": "TEXT",
+            "required": true
+          },
+          {
+            "name": "latitude",
+            "type": "NUMERIC(10,7)"
+          },
+          {
+            "name": "longitude",
+            "type": "NUMERIC(10,7)"
+          },
+          {
+            "name": "is_default",
+            "type": "BOOLEAN",
+            "default": false
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMPTZ"
+          }
+        ]
+      },
+      {
+        "name": "time_slots",
+        "purpose": "Jadwal layanan dan kapasitas reservasi.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "slot_date",
+            "type": "DATE",
+            "required": true
+          },
+          {
+            "name": "start_time",
+            "type": "TIME",
+            "required": true
+          },
+          {
+            "name": "end_time",
+            "type": "TIME",
+            "required": true
+          },
+          {
+            "name": "capacity",
+            "type": "INTEGER",
+            "required": true
+          },
+          {
+            "name": "is_available",
+            "type": "BOOLEAN",
+            "default": true
+          }
+        ],
+        "constraints": [
+          "CHECK(capacity >= 0)",
+          "CHECK(end_time > start_time)"
+        ]
+      },
+      {
+        "name": "reservations",
+        "purpose": "Menyimpan reservasi pelanggan.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "reservation_code",
+            "type": "VARCHAR(30)",
+            "unique": true
+          },
+          {
+            "name": "customer_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "users.id"
+          },
+          {
+            "name": "time_slot_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "time_slots.id"
+          },
+          {
+            "name": "address_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "addresses.id",
+            "nullable": true
+          },
+          {
+            "name": "pickup_type",
+            "type": "VARCHAR(20)",
+            "required": true,
+            "allowed_values": [
+              "drop_off",
+              "pickup"
+            ]
+          },
+          {
+            "name": "notes",
+            "type": "TEXT"
+          },
+          {
+            "name": "status",
+            "type": "VARCHAR(25)",
+            "allowed_values": [
+              "pending",
+              "confirmed",
+              "cancelled",
+              "expired"
+            ]
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "name": "updated_at",
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "indexes": [
+          "time_slot_id",
+          "customer_id",
+          "status"
+        ]
+      },
+      {
+        "name": "services",
+        "purpose": "Jenis layanan dan tarif laundry.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "name",
+            "type": "VARCHAR(100)",
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "TEXT"
+          },
+          {
+            "name": "price",
+            "type": "NUMERIC(12,2)",
+            "required": true
+          },
+          {
+            "name": "pricing_unit",
+            "type": "VARCHAR(20)",
+            "required": true,
+            "examples": [
+              "kg",
+              "piece",
+              "pair"
+            ]
+          },
+          {
+            "name": "estimated_hours",
+            "type": "INTEGER"
+          },
+          {
+            "name": "is_active",
+            "type": "BOOLEAN",
+            "default": true
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "name": "updated_at",
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "constraints": [
+          "CHECK(price >= 0)",
+          "CHECK(estimated_hours IS NULL OR estimated_hours >= 0)"
+        ]
+      },
+      {
+        "name": "orders",
+        "purpose": "Data utama pesanan laundry.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "order_code",
+            "type": "VARCHAR(30)",
+            "unique": true
+          },
+          {
+            "name": "reservation_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "reservations.id",
+            "nullable": true,
+            "unique": true
+          },
+          {
+            "name": "customer_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "users.id"
+          },
+          {
+            "name": "actual_weight",
+            "type": "NUMERIC(8,2)",
+            "nullable": true
+          },
+          {
+            "name": "subtotal",
+            "type": "NUMERIC(12,2)",
+            "required": true,
+            "default": 0
+          },
+          {
+            "name": "discount_amount",
+            "type": "NUMERIC(12,2)",
+            "required": true,
+            "default": 0
+          },
+          {
+            "name": "delivery_fee",
+            "type": "NUMERIC(12,2)",
+            "required": true,
+            "default": 0
+          },
+          {
+            "name": "total_amount",
+            "type": "NUMERIC(12,2)",
+            "required": true,
+            "default": 0
+          },
+          {
+            "name": "payment_status",
+            "type": "VARCHAR(20)",
+            "allowed_values": [
+              "unpaid",
+              "partial",
+              "paid",
+              "refunded"
+            ]
+          },
+          {
+            "name": "order_status",
+            "type": "VARCHAR(30)",
+            "allowed_values": [
+              "pending",
+              "received",
+              "washing",
+              "drying",
+              "ironing",
+              "packaging",
+              "ready",
+              "delivering",
+              "completed",
+              "cancelled",
+              "on_hold"
+            ]
+          },
+          {
+            "name": "received_at",
+            "type": "TIMESTAMPTZ",
+            "nullable": true
+          },
+          {
+            "name": "completed_at",
+            "type": "TIMESTAMPTZ",
+            "nullable": true
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "name": "updated_at",
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "constraints": [
+          "CHECK(actual_weight IS NULL OR actual_weight >= 0)",
+          "CHECK(subtotal >= 0)",
+          "CHECK(discount_amount >= 0)",
+          "CHECK(delivery_fee >= 0)",
+          "CHECK(total_amount >= 0)"
+        ],
+        "indexes": [
+          "customer_id",
+          "order_status",
+          "created_at"
+        ]
+      },
+      {
+        "name": "order_items",
+        "purpose": "Rincian layanan setiap pesanan dengan snapshot tarif.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "order_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "orders.id"
+          },
+          {
+            "name": "service_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "services.id"
+          },
+          {
+            "name": "service_name_snapshot",
+            "type": "VARCHAR(100)",
+            "required": true
+          },
+          {
+            "name": "price_snapshot",
+            "type": "NUMERIC(12,2)",
+            "required": true
+          },
+          {
+            "name": "quantity",
+            "type": "NUMERIC(10,2)",
+            "required": true
+          },
+          {
+            "name": "unit",
+            "type": "VARCHAR(20)",
+            "required": true
+          },
+          {
+            "name": "line_total",
+            "type": "NUMERIC(12,2)",
+            "required": true
+          }
+        ],
+        "constraints": [
+          "CHECK(price_snapshot >= 0)",
+          "CHECK(quantity >= 0)",
+          "CHECK(line_total >= 0)"
+        ]
+      },
+      {
+        "name": "order_status_history",
+        "purpose": "Riwayat perubahan status pesanan.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "order_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "orders.id"
+          },
+          {
+            "name": "old_status",
+            "type": "VARCHAR(30)",
+            "nullable": true
+          },
+          {
+            "name": "new_status",
+            "type": "VARCHAR(30)",
+            "required": true
+          },
+          {
+            "name": "changed_by",
+            "type": "UUID",
+            "key": "FK",
+            "references": "users.id"
+          },
+          {
+            "name": "notes",
+            "type": "TEXT"
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "indexes": [
+          "order_id",
+          "created_at"
+        ]
+      },
+      {
+        "name": "payments",
+        "purpose": "Transaksi pembayaran, termasuk pembayaran parsial.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "order_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "orders.id"
+          },
+          {
+            "name": "amount",
+            "type": "NUMERIC(12,2)",
+            "required": true
+          },
+          {
+            "name": "method",
+            "type": "VARCHAR(30)",
+            "allowed_values": [
+              "cash",
+              "bank_transfer",
+              "payment_gateway"
+            ]
+          },
+          {
+            "name": "status",
+            "type": "VARCHAR(20)",
+            "allowed_values": [
+              "pending",
+              "paid",
+              "failed",
+              "refunded"
+            ]
+          },
+          {
+            "name": "reference_code",
+            "type": "VARCHAR(100)",
+            "nullable": true
+          },
+          {
+            "name": "paid_at",
+            "type": "TIMESTAMPTZ",
+            "nullable": true
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "constraints": [
+          "CHECK(amount > 0)"
+        ],
+        "indexes": [
+          "order_id",
+          "status"
+        ]
+      },
+      {
+        "name": "delivery_tasks",
+        "purpose": "Tugas pickup dan delivery.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "order_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "orders.id"
+          },
+          {
+            "name": "courier_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "users.id"
+          },
+          {
+            "name": "task_type",
+            "type": "VARCHAR(20)",
+            "allowed_values": [
+              "pickup",
+              "delivery"
+            ]
+          },
+          {
+            "name": "status",
+            "type": "VARCHAR(25)",
+            "allowed_values": [
+              "assigned",
+              "accepted",
+              "in_progress",
+              "completed",
+              "failed"
+            ]
+          },
+          {
+            "name": "scheduled_at",
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "name": "completed_at",
+            "type": "TIMESTAMPTZ",
+            "nullable": true
+          },
+          {
+            "name": "notes",
+            "type": "TEXT"
+          }
+        ],
+        "indexes": [
+          "courier_id",
+          "order_id",
+          "status"
+        ]
+      },
+      {
+        "name": "promotions",
+        "purpose": "Konfigurasi voucher dan promosi.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "code",
+            "type": "VARCHAR(50)",
+            "unique": true
+          },
+          {
+            "name": "discount_type",
+            "type": "VARCHAR(20)",
+            "allowed_values": [
+              "percentage",
+              "fixed"
+            ]
+          },
+          {
+            "name": "discount_value",
+            "type": "NUMERIC(12,2)",
+            "required": true
+          },
+          {
+            "name": "min_purchase",
+            "type": "NUMERIC(12,2)",
+            "default": 0
+          },
+          {
+            "name": "start_at",
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "name": "end_at",
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "name": "usage_limit",
+            "type": "INTEGER",
+            "nullable": true
+          },
+          {
+            "name": "is_active",
+            "type": "BOOLEAN",
+            "default": true
+          }
+        ]
+      },
+      {
+        "name": "promotion_redemptions",
+        "purpose": "Riwayat penggunaan voucher.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "promotion_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "promotions.id"
+          },
+          {
+            "name": "user_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "users.id"
+          },
+          {
+            "name": "order_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "orders.id"
+          },
+          {
+            "name": "discount_amount",
+            "type": "NUMERIC(12,2)",
+            "required": true
+          },
+          {
+            "name": "redeemed_at",
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "constraints": [
+          "UNIQUE(promotion_id, order_id)"
+        ]
+      },
+      {
+        "name": "notifications",
+        "purpose": "Riwayat notifikasi yang dibuat atau dikirim sistem.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "user_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "users.id"
+          },
+          {
+            "name": "order_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "orders.id",
+            "nullable": true
+          },
+          {
+            "name": "channel",
+            "type": "VARCHAR(20)",
+            "allowed_values": [
+              "in_app",
+              "email",
+              "whatsapp"
+            ]
+          },
+          {
+            "name": "message",
+            "type": "TEXT",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "VARCHAR(20)",
+            "allowed_values": [
+              "queued",
+              "sent",
+              "failed",
+              "read"
+            ]
+          },
+          {
+            "name": "sent_at",
+            "type": "TIMESTAMPTZ",
+            "nullable": true
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMPTZ"
+          }
+        ]
+      },
+      {
+        "name": "reviews",
+        "purpose": "Ulasan pelanggan setelah pesanan selesai.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "order_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "orders.id",
+            "unique": true
+          },
+          {
+            "name": "user_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "users.id"
+          },
+          {
+            "name": "rating",
+            "type": "INTEGER",
+            "required": true
+          },
+          {
+            "name": "comment",
+            "type": "TEXT"
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "constraints": [
+          "CHECK(rating BETWEEN 1 AND 5)"
+        ]
+      },
+      {
+        "name": "audit_logs",
+        "purpose": "Catatan aktivitas penting dan perubahan data.",
+        "columns": [
+          {
+            "name": "id",
+            "type": "UUID",
+            "key": "PK"
+          },
+          {
+            "name": "user_id",
+            "type": "UUID",
+            "key": "FK",
+            "references": "users.id",
+            "nullable": true
+          },
+          {
+            "name": "action",
+            "type": "VARCHAR(100)",
+            "required": true
+          },
+          {
+            "name": "entity_type",
+            "type": "VARCHAR(100)",
+            "required": true
+          },
+          {
+            "name": "entity_id",
+            "type": "UUID",
+            "nullable": true
+          },
+          {
+            "name": "metadata",
+            "type": "JSONB"
+          },
+          {
+            "name": "created_at",
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "indexes": [
+          "user_id",
+          "entity_type",
+          "created_at"
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "users",
+        "to": "user_roles",
+        "cardinality": "1:N",
+        "meaning": "Satu pengguna dapat memiliki beberapa entri peran."
+      },
+      {
+        "from": "roles",
+        "to": "user_roles",
+        "cardinality": "1:N",
+        "meaning": "Satu peran dapat diberikan kepada banyak pengguna."
+      },
+      {
+        "from": "users",
+        "to": "addresses",
+        "cardinality": "1:N",
+        "meaning": "Pengguna dapat menyimpan beberapa alamat."
+      },
+      {
+        "from": "users",
+        "to": "reservations",
+        "cardinality": "1:N",
+        "meaning": "Pelanggan dapat membuat banyak reservasi."
+      },
+      {
+        "from": "time_slots",
+        "to": "reservations",
+        "cardinality": "1:N",
+        "meaning": "Satu slot dapat menampung beberapa reservasi hingga kapasitasnya."
+      },
+      {
+        "from": "addresses",
+        "to": "reservations",
+        "cardinality": "1:N",
+        "meaning": "Satu alamat dapat digunakan di beberapa reservasi; alamat opsional untuk drop-off."
+      },
+      {
+        "from": "reservations",
+        "to": "orders",
+        "cardinality": "1:0..1",
+        "meaning": "Reservasi dapat menghasilkan maksimal satu pesanan."
+      },
+      {
+        "from": "users",
+        "to": "orders",
+        "cardinality": "1:N",
+        "meaning": "Pelanggan dapat memiliki banyak pesanan."
+      },
+      {
+        "from": "orders",
+        "to": "order_items",
+        "cardinality": "1:N",
+        "meaning": "Pesanan memiliki satu atau lebih rincian layanan."
+      },
+      {
+        "from": "services",
+        "to": "order_items",
+        "cardinality": "1:N",
+        "meaning": "Layanan dapat dipakai dalam banyak rincian pesanan."
+      },
+      {
+        "from": "orders",
+        "to": "payments",
+        "cardinality": "1:N",
+        "meaning": "Pesanan dapat memiliki beberapa transaksi pembayaran."
+      },
+      {
+        "from": "orders",
+        "to": "order_status_history",
+        "cardinality": "1:N",
+        "meaning": "Setiap perubahan status disimpan sebagai riwayat."
+      },
+      {
+        "from": "orders",
+        "to": "delivery_tasks",
+        "cardinality": "1:N",
+        "meaning": "Pesanan dapat memiliki tugas pickup dan delivery terpisah."
+      },
+      {
+        "from": "users",
+        "to": "delivery_tasks",
+        "cardinality": "1:N",
+        "meaning": "Kurir dapat ditugaskan ke banyak tugas."
+      },
+      {
+        "from": "promotions",
+        "to": "promotion_redemptions",
+        "cardinality": "1:N",
+        "meaning": "Promosi dapat memiliki banyak catatan penukaran."
+      },
+      {
+        "from": "users",
+        "to": "promotion_redemptions",
+        "cardinality": "1:N",
+        "meaning": "Pengguna dapat menukarkan promosi sesuai aturan."
+      },
+      {
+        "from": "orders",
+        "to": "promotion_redemptions",
+        "cardinality": "1:0..1",
+        "meaning": "Satu pesanan memiliki maksimal satu penukaran promosi pada rancangan awal."
+      },
+      {
+        "from": "users",
+        "to": "notifications",
+        "cardinality": "1:N",
+        "meaning": "Pengguna dapat menerima banyak notifikasi."
+      },
+      {
+        "from": "orders",
+        "to": "notifications",
+        "cardinality": "1:N",
+        "meaning": "Pesanan dapat memicu banyak notifikasi."
+      },
+      {
+        "from": "users",
+        "to": "reviews",
+        "cardinality": "1:N",
+        "meaning": "Pelanggan dapat memberikan ulasan pada pesanan berbeda."
+      },
+      {
+        "from": "orders",
+        "to": "reviews",
+        "cardinality": "1:0..1",
+        "meaning": "Satu pesanan hanya dapat menerima satu ulasan."
+      },
+      {
+        "from": "users",
+        "to": "audit_logs",
+        "cardinality": "1:N",
+        "meaning": "Aktivitas pengguna dapat dicatat dalam audit log."
+      }
+    ],
+    "indexes": [
+      {
+        "table": "users",
+        "columns": [
+          "email"
+        ],
+        "type": "UNIQUE"
+      },
+      {
+        "table": "reservations",
+        "columns": [
+          "time_slot_id",
+          "status"
+        ],
+        "type": "BTREE"
+      },
+      {
+        "table": "orders",
+        "columns": [
+          "customer_id"
+        ],
+        "type": "BTREE"
+      },
+      {
+        "table": "orders",
+        "columns": [
+          "order_status"
+        ],
+        "type": "BTREE"
+      },
+      {
+        "table": "orders",
+        "columns": [
+          "created_at"
+        ],
+        "type": "BTREE"
+      },
+      {
+        "table": "payments",
+        "columns": [
+          "order_id"
+        ],
+        "type": "BTREE"
+      },
+      {
+        "table": "order_status_history",
+        "columns": [
+          "order_id",
+          "created_at"
+        ],
+        "type": "BTREE"
+      }
+    ]
+  },
+  "architecture": {
+    "style": "three_tier_architecture",
+    "layers": [
+      {
+        "name": "presentation",
+        "components": [
+          "website_pelanggan",
+          "dashboard_admin",
+          "dashboard_staff",
+          "dashboard_kurir"
+        ]
+      },
+      {
+        "name": "application",
+        "components": [
+          "Express_Router",
+          "authentication_middleware",
+          "role_middleware",
+          "validation",
+          "controllers",
+          "service_layer",
+          "error_handler"
+        ]
+      },
+      {
+        "name": "data",
+        "components": [
+          "Prisma_ORM",
+          "PostgreSQL"
+        ]
+      },
+      {
+        "name": "external_services",
+        "components": [
+          "email_or_WhatsApp_API_optional",
+          "payment_gateway_optional"
+        ]
+      }
+    ],
+    "folder_structure": {
+      "root": "lrcmis/",
+      "paths": [
+        "client/src/components/",
+        "client/src/layouts/",
+        "client/src/pages/auth/",
+        "client/src/pages/customer/",
+        "client/src/pages/admin/",
+        "client/src/pages/staff/",
+        "client/src/pages/courier/",
+        "client/src/services/",
+        "client/src/routes/",
+        "server/prisma/schema.prisma",
+        "server/prisma/migrations/",
+        "server/src/config/",
+        "server/src/routes/",
+        "server/src/controllers/",
+        "server/src/services/",
+        "server/src/repositories/",
+        "server/src/middlewares/",
+        "server/src/validators/",
+        "server/src/jobs/",
+        "server/src/utils/",
+        "server/src/app.js",
+        "server/tests/",
+        "docker-compose.yml",
+        ".env.example",
+        "README.md"
+      ],
+      "responsibilities": {
+        "routes": "Mendefinisikan endpoint dan HTTP method.",
+        "controllers": "Menerima request dan membentuk response.",
+        "services": "Menjalankan aturan bisnis dan validasi proses.",
+        "repositories": "Mengelola akses data bila lapisan repository digunakan.",
+        "middlewares": "Autentikasi, otorisasi, validasi, rate limiting, dan error handling.",
+        "prisma": "Akses database dan migrasi skema."
+      }
+    }
+  },
+  "api": {
+    "base_path": "/api/v1",
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/auth/register",
+        "purpose": "Registrasi akun",
+        "access": "public"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/login",
+        "purpose": "Login",
+        "access": "public"
+      },
+      {
+        "method": "POST",
+        "path": "/auth/logout",
+        "purpose": "Logout",
+        "access": "authenticated"
+      },
+      {
+        "method": "GET",
+        "path": "/users/me",
+        "purpose": "Melihat profil pengguna aktif",
+        "access": "authenticated"
+      },
+      {
+        "method": "PATCH",
+        "path": "/users/me",
+        "purpose": "Memperbarui profil",
+        "access": "authenticated"
+      },
+      {
+        "method": "GET",
+        "path": "/services",
+        "purpose": "Daftar layanan aktif",
+        "access": "public"
+      },
+      {
+        "method": "GET",
+        "path": "/time-slots",
+        "purpose": "Melihat jadwal dan kapasitas",
+        "access": "authenticated"
+      },
+      {
+        "method": "POST",
+        "path": "/reservations",
+        "purpose": "Membuat reservasi",
+        "access": "customer"
+      },
+      {
+        "method": "GET",
+        "path": "/reservations/me",
+        "purpose": "Melihat reservasi sendiri",
+        "access": "customer"
+      },
+      {
+        "method": "PATCH",
+        "path": "/reservations/:id/cancel",
+        "purpose": "Membatalkan reservasi yang memenuhi syarat",
+        "access": "reservation_owner"
+      },
+      {
+        "method": "GET",
+        "path": "/orders/me",
+        "purpose": "Melihat pesanan sendiri",
+        "access": "customer"
+      },
+      {
+        "method": "GET",
+        "path": "/orders/:id",
+        "purpose": "Detail pesanan dan timeline",
+        "access": "owner_or_authorized_staff"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/orders",
+        "purpose": "Daftar seluruh pesanan dengan filter",
+        "access": "admin"
+      },
+      {
+        "method": "POST",
+        "path": "/admin/orders/:id/receive",
+        "purpose": "Menerima dan menimbang cucian",
+        "access": "admin"
+      },
+      {
+        "method": "PATCH",
+        "path": "/staff/orders/:id/status",
+        "purpose": "Memperbarui status pengerjaan",
+        "access": "assigned_staff"
+      },
+      {
+        "method": "POST",
+        "path": "/orders/:id/payments",
+        "purpose": "Mencatat pembayaran",
+        "access": "admin_or_payment_service"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/reports/revenue",
+        "purpose": "Laporan pendapatan",
+        "access": "admin_or_owner"
+      },
+      {
+        "method": "GET",
+        "path": "/admin/reports/orders",
+        "purpose": "Laporan jumlah pesanan",
+        "access": "admin_or_owner"
+      },
+      {
+        "method": "POST",
+        "path": "/admin/promotions",
+        "purpose": "Membuat promosi",
+        "access": "admin"
+      },
+      {
+        "method": "GET",
+        "path": "/courier/tasks",
+        "purpose": "Melihat tugas kurir sendiri",
+        "access": "courier"
+      },
+      {
+        "method": "PATCH",
+        "path": "/courier/tasks/:id/status",
+        "purpose": "Memperbarui status tugas kurir",
+        "access": "assigned_courier"
+      },
+      {
+        "method": "POST",
+        "path": "/orders/:id/reviews",
+        "purpose": "Memberi ulasan pada pesanan selesai",
+        "access": "customer_order_owner"
+      },
+      {
+        "method": "GET",
+        "path": "/notifications/me",
+        "purpose": "Melihat notifikasi sendiri",
+        "access": "authenticated"
+      }
+    ],
+    "http_status_codes": {
+      "200": "Berhasil",
+      "201": "Data berhasil dibuat",
+      "400": "Input tidak valid",
+      "401": "Belum terautentikasi",
+      "403": "Tidak memiliki izin",
+      "404": "Data tidak ditemukan",
+      "409": "Konflik, misalnya kapasitas slot penuh atau duplikasi transaksi"
+    },
+    "sample_response": {
+      "success": true,
+      "data": {
+        "orderCode": "LRC-20261023-0001",
+        "orderStatus": "washing",
+        "paymentStatus": "unpaid",
+        "actualWeight": 4.5,
+        "totalAmount": 45000,
+        "timeline": [
+          {
+            "status": "received",
+            "label": "Cucian diterima"
+          },
+          {
+            "status": "washing",
+            "label": "Sedang dicuci"
+          }
+        ]
+      },
+      "note": "Seluruh nilai pada contoh ini merupakan data ilustrasi."
+    }
+  },
+  "workflows": {
+    "reservation_to_completion": [
+      "Pelanggan login.",
+      "Pelanggan memilih layanan dan alamat atau memilih drop-off.",
+      "Pelanggan memilih jadwal reservasi.",
+      "Backend memvalidasi kapasitas slot dalam transaksi database.",
+      "Jika slot tersedia, sistem menyimpan reservasi; jika penuh, sistem menolak dengan konflik.",
+      "Admin mengonfirmasi reservasi.",
+      "Cucian diterima dan ditimbang.",
+      "Sistem membuat pesanan dan rincian layanan dengan snapshot harga.",
+      "Backend menghitung subtotal, diskon, biaya pickup/delivery, dan total.",
+      "Petugas memproses pencucian, pengeringan, penyetrikaan, dan pengemasan.",
+      "Pesanan ditandai siap diambil atau ditugaskan untuk pengantaran.",
+      "Pembayaran diverifikasi atau dicatat sesuai metode.",
+      "Pesanan diselesaikan setelah syarat operasional dan pembayaran terpenuhi.",
+      "Sistem menyimpan riwayat status dan mengirim notifikasi.",
+      "Pelanggan dapat memberikan ulasan."
+    ],
+    "order_status_flow": {
+      "normal": [
+        "pending",
+        "received",
+        "washing",
+        "drying",
+        "ironing",
+        "packaging",
+        "ready",
+        "delivering",
+        "completed"
+      ],
+      "alternatives": [
+        "cancelled",
+        "on_hold",
+        "picked_up"
+      ],
+      "rule": "Backend memvalidasi transisi status; status tidak boleh melompat ke tahap yang tidak sah."
+    },
+    "reservation_capacity": [
+      "Ambil slot yang diminta.",
+      "Kunci atau amankan pemeriksaan kapasitas melalui transaksi database.",
+      "Hitung reservasi aktif yang memakai slot.",
+      "Bandingkan jumlah aktif dengan kapasitas.",
+      "Simpan reservasi hanya jika kapasitas masih tersedia.",
+      "Kembalikan konflik jika slot penuh."
+    ],
+    "payment": [
+      "Buat catatan pembayaran dengan status awal yang sesuai.",
+      "Verifikasi transfer manual oleh petugas berwenang atau verifikasi webhook payment gateway.",
+      "Cegah pemrosesan pembayaran duplikat menggunakan reference atau idempotency key.",
+      "Perbarui status pembayaran pesanan secara konsisten.",
+      "Catat refund sebagai transaksi, bukan menghapus riwayat."
+    ],
+    "pricing_example": {
+      "service": "cuci_setrika",
+      "rate_per_kg_idr": 8000,
+      "actual_weight_kg": 4.5,
+      "delivery_fee_idr": 5000,
+      "subtotal_idr": 36000,
+      "discount_idr": 0,
+      "total_idr": 41000,
+      "note": "Contoh ilustratif. Kebijakan minimum berat dan pembulatan harus ditetapkan secara eksplisit."
+    }
+  },
+  "ui_pages": {
+    "public": [
+      "beranda",
+      "daftar_layanan_dan_harga",
+      "cara_pemesanan",
+      "registrasi",
+      "login",
+      "kontak_dan_lokasi"
+    ],
+    "customer_dashboard": [
+      "ringkasan_pesanan_aktif",
+      "form_reservasi_bertahap",
+      "timeline_status",
+      "riwayat_pesanan",
+      "riwayat_pembayaran",
+      "profil",
+      "alamat",
+      "voucher",
+      "ulasan"
+    ],
+    "admin_owner_dashboard": [
+      "statistik_pesanan_dan_pendapatan",
+      "reservasi_dengan_filter",
+      "manajemen_pelanggan",
+      "manajemen_layanan",
+      "manajemen_pembayaran",
+      "manajemen_voucher",
+      "grafik_pendapatan",
+      "ekspor_laporan"
+    ],
+    "staff_courier_dashboard": [
+      "tugas_harian",
+      "detail_pesanan",
+      "pembaruan_status",
+      "alamat_dan_jadwal",
+      "konfirmasi_serah_terima"
+    ],
+    "responsive_requirements": [
+      "mobile",
+      "tablet",
+      "desktop"
+    ]
+  },
+  "security_and_quality": [
+    {
+      "topic": "password",
+      "requirement": "Simpan password menggunakan hash Argon2id atau bcrypt; jangan menyimpan password asli."
+    },
+    {
+      "topic": "authorization",
+      "requirement": "Terapkan role-based access control dan pemeriksaan kepemilikan data pada setiap endpoint yang relevan."
+    },
+    {
+      "topic": "validation",
+      "requirement": "Validasi semua input di backend menggunakan skema validasi."
+    },
+    {
+      "topic": "sql_injection",
+      "requirement": "Gunakan Prisma atau query terparameterisasi."
+    },
+    {
+      "topic": "session",
+      "requirement": "Untuk cookie, gunakan HttpOnly, Secure pada HTTPS, dan SameSite yang sesuai; terapkan perlindungan CSRF bila diperlukan."
+    },
+    {
+      "topic": "rate_limiting",
+      "requirement": "Batasi percobaan login dan endpoint sensitif."
+    },
+    {
+      "topic": "audit",
+      "requirement": "Catat perubahan status, harga, pembayaran, dan aktivitas admin."
+    },
+    {
+      "topic": "transactions",
+      "requirement": "Gunakan transaksi database untuk reservasi, pembuatan pesanan, dan pencatatan pembayaran terkait."
+    },
+    {
+      "topic": "backup",
+      "requirement": "Jadwalkan backup database dan uji proses pemulihan."
+    },
+    {
+      "topic": "privacy",
+      "requirement": "Batasi akses terhadap alamat, nomor telepon, dan data pelanggan."
+    }
+  ],
+  "test_cases": [
+    {
+      "scenario": "Login menggunakan password salah",
+      "expected_result": "Login ditolak."
+    },
+    {
+      "scenario": "Pelanggan membuka pesanan milik orang lain",
+      "expected_result": "Akses ditolak."
+    },
+    {
+      "scenario": "Dua pelanggan memesan kapasitas terakhir secara bersamaan",
+      "expected_result": "Kapasitas tidak terlampaui; salah satu request ditolak bila slot sudah penuh."
+    },
+    {
+      "scenario": "Admin mengubah harga layanan",
+      "expected_result": "Pesanan lama tetap menggunakan harga snapshot."
+    },
+    {
+      "scenario": "Pembayaran dikirim dua kali",
+      "expected_result": "Tidak terjadi pencatatan ganda."
+    },
+    {
+      "scenario": "Status pesanan diubah secara tidak sah",
+      "expected_result": "Backend menolak transisi."
+    },
+    {
+      "scenario": "Voucher kedaluwarsa digunakan",
+      "expected_result": "Voucher ditolak."
+    },
+    {
+      "scenario": "Laporan bulanan dibuka",
+      "expected_result": "Nilai sesuai transaksi dan filter periode."
+    },
+    {
+      "scenario": "Website dibuka melalui smartphone",
+      "expected_result": "Layout terbaca dan semua fungsi utama dapat digunakan."
+    }
+  ],
+  "implementation_plan": [
+    {
+      "phase": 1,
+      "name": "Analisis kebutuhan",
+      "schedule": "Minggu 1",
+      "tasks": [
+        "Tentukan masalah dan tujuan",
+        "Identifikasi aktor dan hak akses",
+        "Dokumentasikan aturan bisnis dan kebutuhan fungsional/nonfungsional"
+      ],
+      "deliverable": "Dokumen SRS"
+    },
+    {
+      "phase": 2,
+      "name": "Perancangan sistem",
+      "schedule": "Minggu 2",
+      "tasks": [
+        "Buat ERD",
+        "Buat skema database",
+        "Buat use case dan activity diagram",
+        "Rancang API dan wireframe"
+      ],
+      "deliverable": "ERD, UML, rancangan API, desain UI"
+    },
+    {
+      "phase": 3,
+      "name": "Setup backend dan database",
+      "schedule": "Minggu 3",
+      "tasks": [
+        "Setup Express",
+        "Konfigurasi PostgreSQL dan Prisma",
+        "Buat migrasi",
+        "Implementasi middleware dan error handler"
+      ],
+      "deliverable": "Backend dasar dan database"
+    },
+    {
+      "phase": 4,
+      "name": "Authentication dan data dasar",
+      "schedule": "Minggu 4",
+      "tasks": [
+        "Registrasi dan login",
+        "Role-based access control",
+        "Profil dan alamat",
+        "CRUD layanan"
+      ],
+      "deliverable": "API autentikasi dan modul data dasar"
+    },
+    {
+      "phase": 5,
+      "name": "Reservasi dan pesanan",
+      "schedule": "Minggu 5-6",
+      "tasks": [
+        "Slot dan kapasitas",
+        "Reservasi",
+        "Penerimaan dan penimbangan",
+        "Perhitungan harga",
+        "Timeline status"
+      ],
+      "deliverable": "Alur pemesanan utama"
+    },
+    {
+      "phase": 6,
+      "name": "Pembayaran dan fitur lanjutan",
+      "schedule": "Minggu 7",
+      "tasks": [
+        "Pembayaran",
+        "Pickup/delivery",
+        "Voucher",
+        "Notifikasi",
+        "Ulasan"
+      ],
+      "deliverable": "Modul operasional terintegrasi"
+    },
+    {
+      "phase": 7,
+      "name": "Frontend dan integrasi",
+      "schedule": "Minggu 8-9",
+      "tasks": [
+        "Bangun dashboard per role",
+        "Hubungkan frontend ke API",
+        "Uji tampilan responsif"
+      ],
+      "deliverable": "Aplikasi end-to-end"
+    },
+    {
+      "phase": 8,
+      "name": "Testing, deployment, dokumentasi",
+      "schedule": "Minggu 10",
+      "tasks": [
+        "Pengujian fungsional dan integrasi",
+        "Pemeriksaan keamanan dasar",
+        "Deployment",
+        "Dokumentasi dan persiapan demo"
+      ],
+      "deliverable": "Aplikasi siap didemonstrasikan"
+    }
+  ],
+  "deliverables": [
+    "Proposal dan latar belakang masalah",
+    "Software Requirements Specification (SRS)",
+    "Use case diagram dan deskripsi use case",
+    "Activity diagram reservasi dan pembayaran",
+    "ERD, skema relasional, dan data dictionary",
+    "Source code frontend dan backend",
+    "Migrasi database dan data dummy",
+    "Dokumentasi endpoint REST API",
+    "Test case dan hasil pengujian",
+    "Screenshot aplikasi dan panduan pengguna",
+    "README instalasi dan cara menjalankan aplikasi",
+    "Video atau demonstrasi langsung"
+  ],
+  "priorities": {
+    "stage_a_required": [
+      "authentication",
+      "role_based_access_control",
+      "customer_management",
+      "service_management",
+      "reservation",
+      "slot_capacity_control",
+      "order_management",
+      "order_tracking",
+      "payment",
+      "basic_reports"
+    ],
+    "stage_b_differentiators": [
+      "pickup_delivery",
+      "promotion",
+      "notification",
+      "reviews",
+      "audit_log",
+      "report_export",
+      "analytics_dashboard"
+    ],
+    "stage_c_future_development": [
+      "payment_gateway",
+      "WhatsApp_notification",
+      "automated_reminders",
+      "capacity_optimization",
+      "customer_behavior_analysis"
+    ]
+  },
+  "design_notes": [
+    "Mulai implementasi dari aturan bisnis dan ERD sebelum membangun semua halaman frontend.",
+    "Implementasikan database dan REST API lebih dahulu, lalu integrasikan frontend.",
+    "Gunakan migrasi database yang dapat dilacak dalam version control.",
+    "Jangan menyimpan seluruh logika bisnis di route atau controller.",
+    "Pastikan status pembayaran dan status pengerjaan diperbarui secara konsisten.",
+    "Tinjau kebijakan refund, pembulatan berat, minimum berat, dan pembatalan sebelum implementasi final."
+  ]
+}
