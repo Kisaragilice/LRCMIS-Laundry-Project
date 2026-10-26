@@ -184,6 +184,7 @@ audit log tetap disimpan. Administrator utama dan akun sah tidak disentuh.
 | `JWT_SECRET` | Secret JWT, minimal 32 karakter | wajib |
 | `JWT_EXPIRES_IN` | Masa berlaku sesi | `8h` |
 | `CLIENT_ORIGIN` | Origin frontend yang diizinkan | `http://localhost:5173` |
+| `PUBLIC_APP_URL` | Origin publik untuk link di email | ikut `CLIENT_ORIGIN` pertama |
 | `COOKIE_SECURE` | Cookie hanya untuk HTTPS | `false` |
 | `BUSINESS_TIMEZONE` | Zona waktu bisnis | `Asia/Jakarta` |
 | `MIN_WEIGHT_KG` | Berat minimum yang ditagih | `3` |
@@ -212,7 +213,8 @@ Compose karena Compose membaca `.env` dari root proyek.
 | `JWT_SECRET` | ya | Minimal 32 karakter, bukan nilai contoh |
 | `POSTGRES_DB` / `POSTGRES_USER` | tidak | Default `lrcmis` |
 | `POSTGRES_PASSWORD` | ya | Gunakan random hex agar aman di `DATABASE_URL` |
-| `CLIENT_ORIGIN` | ya | Origin web, boleh dipisah koma: `https://lrcmis.example.com,http://192.168.1.10:9999` |
+| `CLIENT_ORIGIN` | ya | Origin web, boleh dipisah koma: `https://laundry.kisaragilice.my.id,http://192.168.1.10:9999` |
+| `PUBLIC_APP_URL` | ya untuk email | Domain publik untuk link reset: `https://laundry.kisaragilice.my.id` |
 | `COOKIE_SECURE` | ya | `true` untuk HTTPS; `false` untuk akses LAN lewat HTTP |
 | `EXPOSE_RESET_TOKEN` | ya | Harus `false` |
 | `EMAIL_PROVIDER_API_KEY` | ya di production | API key Resend |
@@ -241,6 +243,9 @@ Origin yang sama dengan host request (UI dan `/api` lewat Nginx yang sama) selal
 mengganti IP LAN atau port web tidak memerlukan perubahan `CLIENT_ORIGIN`. Daftar
 `CLIENT_ORIGIN` hanya diperlukan jika frontend dan API benar-benar berbeda origin.
 
+Link di email memakai `PUBLIC_APP_URL`, bukan `CLIENT_ORIGIN`. Saat memakai Cloudflare Tunnel,
+atur keduanya ke domain publik agar link reset tidak memakai IP LAN.
+
 ---
 
 ## 5. Reset password dan Resend
@@ -259,7 +264,8 @@ Konfigurasi Resend:
 ```env
 EMAIL_PROVIDER_API_KEY=re_xxxxxxxxxxxxxxxxx
 EMAIL_FROM="LRC MIS <server@kisaragilice.my.id>"
-CLIENT_ORIGIN=https://lrcmis.kisaragilice.my.id
+PUBLIC_APP_URL=https://laundry.kisaragilice.my.id
+CLIENT_ORIGIN=https://laundry.kisaragilice.my.id
 ```
 
 Pastikan:
@@ -267,6 +273,7 @@ Pastikan:
 - Domain pengirim sudah terverifikasi di Resend.
 - `EMAIL_FROM` memakai alamat pada domain yang terverifikasi.
 - DNS SPF/DKIM Resend sudah aktif.
+- `PUBLIC_APP_URL` memakai domain publik yang dibuka pengguna, bukan IP LAN/localhost.
 - `CLIENT_ORIGIN` sama persis dengan origin web, tanpa trailing slash.
 
 Untuk pengujian di development, `EXPOSE_RESET_TOKEN=false` tetap digunakan. Jangan mengaktifkan
@@ -296,6 +303,7 @@ Isi minimum di `.env` untuk mencoba di satu mesin lewat HTTP:
 NODE_ENV=development
 COOKIE_SECURE=false
 CLIENT_ORIGIN=http://localhost:8080
+PUBLIC_APP_URL=http://localhost:8080
 JWT_SECRET=<openssl rand -hex 48>
 POSTGRES_PASSWORD=<openssl rand -hex 24>
 WEB_BIND=127.0.0.1
@@ -324,6 +332,7 @@ NODE_ENV=production
 # terlihat berhasil tetapi cookie auth langsung dibuang browser.
 COOKIE_SECURE=false
 CLIENT_ORIGIN=http://192.168.1.10:9999,http://localhost:9999
+PUBLIC_APP_URL=http://192.168.1.10:9999
 WEB_BIND=0.0.0.0
 WEB_PORT=9999
 # production mewajibkan email reset password
@@ -347,6 +356,47 @@ sudo ufw allow from 192.168.1.0/24 to any port 9999 proto tcp
 
 Jangan buka port `4000` (API) atau `5433` (PostgreSQL) ke LAN; keduanya sengaja di-bind ke
 `127.0.0.1`.
+
+### Homelab dengan Cloudflare Tunnel dan domain publik
+
+Cloudflare Tunnel hanya meneruskan HTTP. **Link reset password tidak otomatis mengikuti domain
+tunnel**; aplikasi tetap memakai `PUBLIC_APP_URL`. Jadi untuk domain
+`laundry.kisaragilice.my.id`:
+
+```env
+NODE_ENV=production
+COOKIE_SECURE=true
+CLIENT_ORIGIN=https://laundry.kisaragilice.my.id
+PUBLIC_APP_URL=https://laundry.kisaragilice.my.id
+WEB_BIND=127.0.0.1
+WEB_PORT=9999
+EMAIL_PROVIDER_API_KEY=<api-key-resend>
+EMAIL_FROM="LRC MIS <server@kisaragilice.my.id>"
+```
+
+Jika cloudflared berjalan di host yang sama, arahkan tunnel ke
+`http://127.0.0.1:9999`. Jika cloudflared berjalan di mesin/container lain, gunakan
+`WEB_BIND=0.0.0.0` dan batasi port `9999` lewat firewall, lalu arahkan tunnel ke IP LAN server.
+
+Contoh konfigurasi cloudflared:
+
+```yaml
+tunnel: <TUNNEL_UUID>
+credentials-file: /home/<user>/.cloudflared/<TUNNEL_UUID>.json
+ingress:
+  - hostname: laundry.kisaragilice.my.id
+    service: http://127.0.0.1:9999
+  - service: http_status:404
+```
+
+Setelah mengubah `.env`, recreate API:
+
+```bash
+docker compose up -d --force-recreate server
+docker compose exec server sh -c 'echo "PUBLIC_APP_URL=$PUBLIC_APP_URL"; echo "CLIENT_ORIGIN=$CLIENT_ORIGIN"'
+```
+
+Nilai `PUBLIC_APP_URL` harus domain HTTPS publik, bukan `192.168.x.x` atau `localhost`.
 
 Membuat administrator di container:
 
@@ -385,7 +435,7 @@ perintah dapat memakai image lama dan gagal dengan `spawn tsx ENOENT`.
 
 Bagian ini adalah tutorial lengkap untuk server Arch Linux. Contoh domain yang dipakai:
 
-- Domain web: `lrcmis.kisaragilice.my.id`
+- Domain web: `laundry.kisaragilice.my.id`
 - Email pengirim: `server@kisaragilice.my.id`
 
 Ganti domain tersebut dengan domain Anda.
@@ -488,7 +538,8 @@ JWT_SECRET=<hasil-openssl-rand-hex-48>
 JWT_EXPIRES_IN=8h
 
 COOKIE_SECURE=true
-CLIENT_ORIGIN=https://lrcmis.kisaragilice.my.id
+CLIENT_ORIGIN=https://laundry.kisaragilice.my.id
+PUBLIC_APP_URL=https://laundry.kisaragilice.my.id
 
 POSTGRES_DB=lrcmis
 POSTGRES_USER=lrcmis
@@ -570,7 +621,7 @@ dan tidak membuat akun.
 Edit `/etc/caddy/Caddyfile`:
 
 ```caddyfile
-lrcmis.kisaragilice.my.id {
+laundry.kisaragilice.my.id {
     encode gzip
     reverse_proxy 127.0.0.1:8080
 }
@@ -588,12 +639,68 @@ sudo systemctl status caddy --no-pager
 Caddy akan meminta sertifikat TLS otomatis. Pastikan port 80 dan 443 terbuka serta DNS sudah
 mengarah ke server.
 
-### 7.10 Verifikasi
+### 7.10 Cloudflare Tunnel (alternatif Caddy)
+
+Jika server homelab tidak punya IP publik dan Anda memakai Cloudflare Tunnel, Caddy tidak perlu
+dipasang. Tunnel hanya meneruskan request; link email tetap ditentukan oleh `PUBLIC_APP_URL`.
+
+Pastikan `.env` berisi:
+
+```env
+COOKIE_SECURE=true
+CLIENT_ORIGIN=https://laundry.kisaragilice.my.id
+PUBLIC_APP_URL=https://laundry.kisaragilice.my.id
+WEB_BIND=127.0.0.1
+WEB_PORT=9999
+```
+
+Buat tunnel dan DNS (ganti `lrcmis` dengan nama tunnel Anda):
+
+```bash
+cloudflared tunnel login
+cloudflared tunnel create lrcmis
+cloudflared tunnel route dns lrcmis laundry.kisaragilice.my.id
+```
+
+Contoh `/etc/cloudflared/config.yml`:
+
+```yaml
+tunnel: <TUNNEL_UUID>
+credentials-file: /etc/cloudflared/<TUNNEL_UUID>.json
+ingress:
+  - hostname: laundry.kisaragilice.my.id
+    service: http://127.0.0.1:9999
+  - service: http_status:404
+```
+
+Salin file credential ke lokasi yang bisa dibaca service cloudflared, lalu jalankan:
+
+```bash
+sudo mkdir -p /etc/cloudflared
+sudo cp ~/.cloudflared/<TUNNEL_UUID>.json /etc/cloudflared/
+sudo cloudflared service install
+sudo systemctl enable --now cloudflared
+sudo systemctl status cloudflared --no-pager
+```
+
+Jika cloudflared berjalan di mesin/container lain, ubah `WEB_BIND=0.0.0.0`, batasi port web lewat
+firewall, dan arahkan `service` tunnel ke IP LAN server.
+
+Verifikasi:
+
+```bash
+curl -fsS https://laundry.kisaragilice.my.id/api/v1/health
+docker compose exec server sh -c 'echo "PUBLIC_APP_URL=$PUBLIC_APP_URL"'
+```
+
+Link reset password harus memakai `https://laundry.kisaragilice.my.id`, bukan IP lokal.
+
+### 7.11 Verifikasi
 
 ```bash
 # Dari server
 curl -fsS http://127.0.0.1:8080/api/v1/health
-curl -fsS https://lrcmis.kisaragilice.my.id/api/v1/health
+curl -fsS https://laundry.kisaragilice.my.id/api/v1/health
 
 # Status container
 docker compose ps
@@ -603,7 +710,7 @@ docker compose logs --tail=50 web
 docker compose logs --tail=100 server
 ```
 
-Buka `https://lrcmis.kisaragilice.my.id`, login sebagai admin, lalu uji:
+Buka `https://laundry.kisaragilice.my.id`, login sebagai admin, lalu uji:
 
 - login dan logout,
 - buat reservasi sebagai pelanggan,
@@ -612,7 +719,7 @@ Buka `https://lrcmis.kisaragilice.my.id`, login sebagai admin, lalu uji:
 - laporan/CSV,
 - refresh halaman dalam keadaan login.
 
-### 7.11 Update aplikasi
+### 7.12 Update aplikasi
 
 Backup database terlebih dahulu:
 
@@ -636,7 +743,7 @@ docker compose logs --tail=100 server
 
 Migrasi baru dijalankan otomatis oleh entrypoint `server`.
 
-### 7.12 Backup dan restore
+### 7.13 Backup dan restore
 
 Backup database:
 
@@ -666,7 +773,7 @@ Contoh cron harian (sesuaikan path dan retensi):
 0 3 * * * cd /opt/lrcmis && docker compose exec -T db pg_dump -U lrcmis -d lrcmis -Fc > backups/lrcmis-$(date +\%F).dump
 ```
 
-### 7.13 Troubleshooting Docker di Arch
+### 7.14 Troubleshooting Docker di Arch
 
 **Login/API menghasilkan `Permintaan gagal (502)`**
 
@@ -721,6 +828,31 @@ benar-benar diakses lewat HTTPS.
 
 Cek juga response login: cookie `lrcmis_token` harus punya `HttpOnly; SameSite=Lax` dan **tidak**
 punya atribut `Secure` saat memakai HTTP.
+
+**Link reset password di email mengarah ke IP lokal, bukan domain**
+
+Link dibuat dari `PUBLIC_APP_URL`. Cloudflare Tunnel/Caddy tidak mengubah nilai tersebut. Cek:
+
+```bash
+cd /opt/lrcmis
+grep '^PUBLIC_APP_URL=' .env
+docker compose exec server sh -c 'echo "$PUBLIC_APP_URL"'
+```
+
+Set domain publik:
+
+```env
+PUBLIC_APP_URL=https://laundry.kisaragilice.my.id
+CLIENT_ORIGIN=https://laundry.kisaragilice.my.id
+```
+
+Lalu recreate dan minta email reset baru:
+
+```bash
+docker compose up -d --force-recreate server
+```
+
+Email yang sudah terlanjur dikirim tidak berubah.
 
 **Web bisa dibuka tetapi semua request API 502**
 
@@ -932,7 +1064,7 @@ Cakupan backend antara lain:
 
 Frontend mencakup format IDR/tanggal, schema Zod, rendering design system, dan API helper.
 
-**Hasil terbaru: backend 43 passed, frontend 17 passed.**
+**Hasil terbaru: backend 44 passed, frontend 17 passed.**
 
 ---
 

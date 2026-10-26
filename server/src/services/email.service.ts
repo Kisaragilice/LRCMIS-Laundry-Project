@@ -36,7 +36,12 @@ export function isEmailConfigured(): boolean {
 }
 
 export function buildPasswordResetLink(token: string): string {
-  const origin = env.CLIENT_ORIGIN.split(',')[0].trim().replace(/\/+$/, '');
+  // PUBLIC_APP_URL is the canonical public origin. Falling back to
+  // CLIENT_ORIGIN keeps older deployments working, but LAN/localhost origins
+  // must not be used for emails when the app is exposed through a tunnel.
+  const origin = (env.PUBLIC_APP_URL ?? env.CLIENT_ORIGIN.split(',')[0] ?? '')
+    .trim()
+    .replace(/\/+$/, '');
   const url = new URL('/reset-password', origin);
   url.searchParams.set('token', token);
   return url.toString();

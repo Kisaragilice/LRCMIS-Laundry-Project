@@ -42,6 +42,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
       CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost:8080}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-}
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       BUSINESS_TIMEZONE: ${BUSINESS_TIMEZONE:-Asia/Jakarta}
       MIN_WEIGHT_KG: ${MIN_WEIGHT_KG:-3}
