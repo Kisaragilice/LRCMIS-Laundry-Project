@@ -2,7 +2,13 @@ import type { Request, Response } from 'express';
 import * as authService from '../services/auth.service';
 import { created, ok } from '../utils/http';
 import { clientIp } from '../services/audit.service';
-import { clearAuthCookies, createCsrfToken, parseDurationMs, setAuthCookies } from '../utils/auth';
+import {
+  clearAuthCookies,
+  createCsrfToken,
+  parseDurationMs,
+  setAuthCookies,
+  shouldUseSecureCookies,
+} from '../utils/auth';
 import { CSRF_COOKIE } from '../config/constants';
 import { env } from '../config/env';
 
@@ -33,7 +39,7 @@ export async function csrf(_req: Request, res: Response) {
   const token = createCsrfToken();
   res.cookie(CSRF_COOKIE, token, {
     httpOnly: false,
-    secure: env.COOKIE_SECURE,
+    secure: shouldUseSecureCookies(res),
     sameSite: 'lax',
     path: '/',
     maxAge: parseDurationMs(env.JWT_EXPIRES_IN),

@@ -53,20 +53,13 @@ export function loadEnv(): Env {
       throw new Error('JWT_SECRET must not use the example value in production');
     }
 
-    // Cookies can only be marked Secure when the web UI is served over HTTPS.
-    // A LAN-only homelab deployment (http://192.168.x.x:port) must be allowed to
-    // run with COOKIE_SECURE=false, otherwise login succeeds but the browser
-    // silently drops the auth cookie.
+    // COOKIE_SECURE is the deployment policy flag. The actual Secure attribute
+    // is still chosen per request in setAuthCookies(): HTTPS gets Secure
+    // cookies and plain HTTP LAN requests get normal cookies.
     const origins = env.CLIENT_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean);
     const usesPlainHttp = origins.some((origin) => origin.startsWith('http://'));
     if (!env.COOKIE_SECURE && !usesPlainHttp) {
       throw new Error('COOKIE_SECURE must be true when CLIENT_ORIGIN only uses HTTPS');
-    }
-    if (!env.COOKIE_SECURE) {
-      console.warn(
-        '[config] COOKIE_SECURE=false: cookies are sent over plain HTTP. ' +
-          'Use HTTPS + COOKIE_SECURE=true for deployments exposed outside the LAN.',
-      );
     }
 
     if (env.EXPOSE_RESET_TOKEN) {

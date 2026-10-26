@@ -215,7 +215,7 @@ Compose karena Compose membaca `.env` dari root proyek.
 | `POSTGRES_PASSWORD` | ya | Gunakan random hex agar aman di `DATABASE_URL` |
 | `CLIENT_ORIGIN` | ya | Origin web, boleh dipisah koma: `https://laundry.kisaragilice.my.id,http://192.168.1.10:9999` |
 | `PUBLIC_APP_URL` | ya untuk email | Domain publik untuk link reset: `https://laundry.kisaragilice.my.id` |
-| `COOKIE_SECURE` | ya | `true` untuk HTTPS; `false` untuk akses LAN lewat HTTP |
+| `COOKIE_SECURE` | ya | `true` untuk deployment HTTPS; atribut Secure dipilih otomatis per request |
 | `EXPOSE_RESET_TOKEN` | ya | Harus `false` |
 | `EMAIL_PROVIDER_API_KEY` | ya di production | API key Resend |
 | `EMAIL_FROM` | ya di production | Harus memakai domain terverifikasi |
@@ -233,8 +233,12 @@ Pada `NODE_ENV=production`, API menolak start jika:
 - `EMAIL_PROVIDER_API_KEY` atau `EMAIL_FROM` kosong.
 
 `COOKIE_SECURE=false` tetap diizinkan bila ada origin `http://` (misalnya homelab LAN tanpa
-domain). API akan menulis peringatan di log. Untuk deployment yang bisa diakses dari internet,
-pakai HTTPS dan `COOKIE_SECURE=true`.
+domain).
+
+Atribut `Secure` pada cookie sebenarnya dipilih otomatis dari request: login lewat HTTPS mendapat
+cookie `Secure`, login lewat HTTP LAN mendapat cookie biasa. Jadi satu deployment bisa diakses
+dari `https://domain-anda` sekaligus `http://192.168.1.10:9999` tanpa saling merusak sesi. Untuk
+deployment yang bisa diakses dari internet, tetap pakai HTTPS dan `COOKIE_SECURE=true`.
 
 Jika salah satu syarat tidak terpenuhi, container `server` akan restart terus dan request API dari
 web akan menghasilkan **502**.
@@ -328,9 +332,9 @@ Mesin headless biasanya diakses dari laptop/HP, bukan dari `localhost`. Ubah `.e
 
 ```env
 NODE_ENV=production
-# HTTP di LAN tidak boleh memakai cookie Secure, kalau tidak login akan
-# terlihat berhasil tetapi cookie auth langsung dibuang browser.
-COOKIE_SECURE=false
+# Boleh tetap true meskipun LAN memakai HTTP. Server memilih atribut Secure
+# otomatis: request HTTPS mendapat cookie Secure, request HTTP tidak.
+COOKIE_SECURE=true
 CLIENT_ORIGIN=http://192.168.1.10:9999,http://localhost:9999
 PUBLIC_APP_URL=http://192.168.1.10:9999
 WEB_BIND=0.0.0.0
@@ -342,7 +346,11 @@ EMAIL_FROM="LRC MIS <server@domain-terverifikasi>"
 
 Ganti `192.168.1.10` dengan IP LAN mesin (`ip -4 addr show`). Akses web di
 `http://192.168.1.10:9999`. Karena UI dan `/api` berada di origin yang sama, mengganti IP atau
-port tidak akan memicu error CORS selama `COOKIE_SECURE` sesuai skema yang dipakai.
+port tidak akan memicu error CORS.
+
+Jika mesin juga punya domain publik lewat Cloudflare Tunnel, pakai
+`PUBLIC_APP_URL=https://domain-anda` dan tambahkan domain tersebut ke `CLIENT_ORIGIN`. Satu
+deployment bisa melayani HTTPS publik dan HTTP LAN sekaligus.
 
 Jika tidak ingin mengonfigurasi Resend, gunakan `NODE_ENV=development` untuk homelab LAN. Mode ini
 melewati validasi email production, tetapi jangan dipakai untuk deployment yang terbuka ke
@@ -426,8 +434,8 @@ perintah dapat memakai image lama dan gagal dengan `spawn tsx ENOENT`.
 > **Status verifikasi:** Docker Compose diuji dengan Docker 29.9.2 dan Compose v5.6.1. Build image,
 > migrasi Prisma, seed referensi, healthcheck API, login melalui Nginx, dan request API setelah
 > container `server` dibuat ulang berhasil tanpa 502. Jalur yang diverifikasi di mesin homelab:
-> LAN HTTP dengan `COOKIE_SECURE=false`. Jalur HTTPS di belakang Caddy/Cloudflare Tunnel mengikuti
-> konfigurasi yang sama, tetapi tetap perlu diuji di server masing-masing.
+> LAN HTTP dan simulasi HTTPS. Cookie otomatis non-Secure untuk HTTP dan Secure untuk HTTPS,
+> sehingga satu deployment aman dipakai lewat domain publik maupun IP LAN.
 
 ---
 
@@ -822,12 +830,16 @@ curl -i -X POST http://127.0.0.1:9999/api/v1/auth/login \
 
 **Login seolah berhasil tetapi langsung kembali ke halaman login / semua request 401**
 
-Cookie auth tidak tersimpan. Biasanya karena `COOKIE_SECURE=true` tetapi web dibuka lewat HTTP.
-Untuk LAN HTTP set `COOKIE_SECURE=false`, lalu recreate `server`. Gunakan `true` hanya jika web
-benar-benar diakses lewat HTTPS.
+Cookie auth tidak tersimpan. Sejak versi ini atribut `Secure` dipilih otomatis per request, jadi
+pastikan browser benar-benar memakai host yang sama untuk halaman dan `/api`. Hapus cookie lama
+untuk situs tersebut (DevTools → Application → Cookies → Clear), lalu login ulang.
 
-Cek juga response login: cookie `lrcmis_token` harus punya `HttpOnly; SameSite=Lax` dan **tidak**
-punya atribut `Secure` saat memakai HTTP.
+Cek response login di Network tab: cookie `lrcmis_token` harus punya `HttpOnly; SameSite=Lax` dan
+**tidak** punya atribut `Secure` saat halaman dibuka lewat HTTP. Saat lewat HTTPS, cookie harus
+punya `Secure`.
+
+Jika memakai domain publik dan LAN sekaligus, pastikan login dan request API tetap pada host yang
+sama (jangan campur halaman `https://domain` dengan API `http://IP`).
 
 **Link reset password di email mengarah ke IP lokal, bukan domain**
 
@@ -1115,9 +1127,10 @@ Checklist production:
   `server/.env` benar.
 - **`Environment variable not found: DATABASE_URL`:** jalankan perintah Prisma dari `server/`
   atau lewat root script workspace.
-- **Cookie tidak tersimpan:** pastikan `COOKIE_SECURE` sesuai skema (false untuk HTTP, true untuk
-  HTTPS) dan akses UI lewat origin yang terdaftar di `CLIENT_ORIGIN`. Same-origin lewat Nginx
-  diterima otomatis, tetapi membuka API langsung dari origin lain akan ditolak.
+- **Cookie tidak tersimpan:** atribut `Secure` dipilih otomatis dari skema request, jadi yang
+  penting adalah membuka UI dan API pada host yang sama. Hapus cookie lama lalu login ulang. Akses
+  UI lewat origin yang terdaftar di `CLIENT_ORIGIN`; same-origin lewat Nginx diterima otomatis,
+  tetapi membuka API langsung dari origin lain akan ditolak.
 - **`Token CSRF tidak valid`:** reload aplikasi agar cookie CSRF diperbarui. Helper API frontend
   otomatis mengirim header `X-CSRF-Token`.
 - **Test gagal karena database kotor:** suite backend membersihkan database `lrcmis_test` saat

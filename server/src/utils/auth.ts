@@ -40,11 +40,27 @@ export function createCsrfToken(): string {
   return randomBytes(24).toString('hex');
 }
 
+/**
+ * A deployment can be reachable both through HTTPS (public domain/tunnel) and
+ * plain HTTP (LAN). Cookies marked Secure are silently discarded by browsers
+ * on the HTTP origin, which makes login appear to succeed and every following
+ * request return 401. Choose the flag from the actual request instead.
+ */
+export function shouldUseSecureCookies(res: Response): boolean {
+  const origin = res.req.headers.origin;
+  if (typeof origin === 'string') {
+    if (origin.startsWith('https://')) return true;
+    if (origin.startsWith('http://')) return false;
+  }
+  return res.req.secure;
+}
+
 export function setAuthCookies(res: Response, token: string): string {
   const maxAge = parseDurationMs(env.JWT_EXPIRES_IN);
+  const secure = shouldUseSecureCookies(res);
   res.cookie(AUTH_COOKIE, token, {
     httpOnly: true,
-    secure: env.COOKIE_SECURE,
+    secure,
     sameSite: 'lax',
     path: '/',
     maxAge,
@@ -52,7 +68,7 @@ export function setAuthCookies(res: Response, token: string): string {
   const csrf = createCsrfToken();
   res.cookie(CSRF_COOKIE, csrf, {
     httpOnly: false,
-    secure: env.COOKIE_SECURE,
+    secure,
     sameSite: 'lax',
     path: '/',
     maxAge,
@@ -61,8 +77,9 @@ export function setAuthCookies(res: Response, token: string): string {
 }
 
 export function clearAuthCookies(res: Response): void {
-  res.clearCookie(AUTH_COOKIE, { path: '/', httpOnly: true, sameSite: 'lax', secure: env.COOKIE_SECURE });
-  res.clearCookie(CSRF_COOKIE, { path: '/', sameSite: 'lax', secure: env.COOKIE_SECURE });
+  const secure = shouldUseSecureCookies(res);
+  res.clearCookie(AUTH_COOKIE, { path: '/', httpOnly: true, sameSite: 'lax', secure });
+  res.clearCookie(CSRF_COOKIE, { path: '/', sameSite: 'lax', secure });
 }
 
 export function extractToken(authorization?: string, cookieToken?: string): string | null {
