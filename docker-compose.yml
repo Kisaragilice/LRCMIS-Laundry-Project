@@ -1,8 +1,15 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   db:
     image: postgres:17-alpine
     container_name: lrcmis-db
     restart: unless-stopped
+    logging: *default-logging
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-lrcmis}
       POSTGRES_USER: ${POSTGRES_USER:-lrcmis}
@@ -24,6 +31,7 @@ services:
       dockerfile: server/Dockerfile
     container_name: lrcmis-api
     restart: unless-stopped
+    logging: *default-logging
     depends_on:
       db:
         condition: service_healthy
@@ -56,6 +64,7 @@ services:
       timeout: 5s
       retries: 12
       start_period: 30s
+    stop_grace_period: 15s
 
   web:
     build:
@@ -63,20 +72,29 @@ services:
       dockerfile: client/Dockerfile
     container_name: lrcmis-web
     restart: unless-stopped
+    logging: *default-logging
     depends_on:
       server:
         condition: service_healthy
     # Secure default: only a host reverse proxy (Caddy/Nginx) can reach port 8080.
+    # Set WEB_BIND=0.0.0.0 in .env for direct LAN access.
     ports:
       - "${WEB_BIND:-127.0.0.1}:${WEB_PORT:-8080}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # One-off reference-data refresh:
-  #   docker compose run --rm seed
+  #   docker compose run --rm --build seed
   seed:
     build:
       context: .
       dockerfile: server/Dockerfile
     profiles: ["tools"]
+    logging: *default-logging
     depends_on:
       db:
         condition: service_healthy

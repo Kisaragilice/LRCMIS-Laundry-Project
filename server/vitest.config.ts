@@ -10,7 +10,11 @@ export default defineConfig({
     testTimeout: 30_000,
     env: {
       NODE_ENV: 'test',
-      DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/lrcmis_test?schema=public',
+      // Override for the Docker PostgreSQL instance, for example:
+      // TEST_DATABASE_URL=postgresql://lrcmis:<password>@127.0.0.1:5433/lrcmis_test?schema=public
+      DATABASE_URL:
+        process.env.TEST_DATABASE_URL ??
+        'postgresql://postgres:postgres@localhost:5432/lrcmis_test?schema=public',
       JWT_SECRET: 'test-only-secret-with-at-least-32-characters-long',
       JWT_EXPIRES_IN: '1h',
       CLIENT_ORIGIN: 'http://localhost:5173',

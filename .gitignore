@@ -10,3 +10,6 @@ client/.vite
 server/prisma/*.db
 uploads/
 contoh-visual.pdf
+# Local curl/browser session dumps can contain auth cookies.
+cookies.txt
+*.cookies.txt

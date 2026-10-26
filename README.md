@@ -212,8 +212,8 @@ Compose karena Compose membaca `.env` dari root proyek.
 | `JWT_SECRET` | ya | Minimal 32 karakter, bukan nilai contoh |
 | `POSTGRES_DB` / `POSTGRES_USER` | tidak | Default `lrcmis` |
 | `POSTGRES_PASSWORD` | ya | Gunakan random hex agar aman di `DATABASE_URL` |
-| `CLIENT_ORIGIN` | ya | Contoh `https://lrcmis.example.com` |
-| `COOKIE_SECURE` | ya | `true` untuk production HTTPS |
+| `CLIENT_ORIGIN` | ya | Origin web, boleh dipisah koma: `https://lrcmis.example.com,http://192.168.1.10:9999` |
+| `COOKIE_SECURE` | ya | `true` untuk HTTPS; `false` untuk akses LAN lewat HTTP |
 | `EXPOSE_RESET_TOKEN` | ya | Harus `false` |
 | `EMAIL_PROVIDER_API_KEY` | ya di production | API key Resend |
 | `EMAIL_FROM` | ya di production | Harus memakai domain terverifikasi |
@@ -226,12 +226,20 @@ Compose karena Compose membaca `.env` dari root proyek.
 Pada `NODE_ENV=production`, API menolak start jika:
 
 - `JWT_SECRET` masih memakai nilai contoh,
-- `COOKIE_SECURE` bukan `true`,
+- `COOKIE_SECURE=false` padahal seluruh `CLIENT_ORIGIN` memakai HTTPS,
 - `EXPOSE_RESET_TOKEN` bukan `false`,
 - `EMAIL_PROVIDER_API_KEY` atau `EMAIL_FROM` kosong.
 
-Validasi ini sengaja dibuat ketat. Jika salah satu syarat tidak terpenuhi, container `server`
-akan restart terus dan request API dari web akan menghasilkan **502**.
+`COOKIE_SECURE=false` tetap diizinkan bila ada origin `http://` (misalnya homelab LAN tanpa
+domain). API akan menulis peringatan di log. Untuk deployment yang bisa diakses dari internet,
+pakai HTTPS dan `COOKIE_SECURE=true`.
+
+Jika salah satu syarat tidak terpenuhi, container `server` akan restart terus dan request API dari
+web akan menghasilkan **502**.
+
+Origin yang sama dengan host request (UI dan `/api` lewat Nginx yang sama) selalu diterima, jadi
+mengganti IP LAN atau port web tidak memerlukan perubahan `CLIENT_ORIGIN`. Daftar
+`CLIENT_ORIGIN` hanya diperlukan jika frontend dan API benar-benar berbeda origin.
 
 ---
 
@@ -279,13 +287,25 @@ Compose menyediakan empat service:
 
 ```bash
 cp .env.docker.example .env
-# Edit .env:
-# - NODE_ENV=development untuk HTTP lokal, atau production jika sudah HTTPS
-# - COOKIE_SECURE=false untuk HTTP lokal
-# - JWT_SECRET dan POSTGRES_PASSWORD yang kuat
-# - CLIENT_ORIGIN=http://localhost:8080
-# - EMAIL_* jika ingin mencoba reset password
+chmod 600 .env
+```
 
+Isi minimum di `.env` untuk mencoba di satu mesin lewat HTTP:
+
+```env
+NODE_ENV=development
+COOKIE_SECURE=false
+CLIENT_ORIGIN=http://localhost:8080
+JWT_SECRET=<openssl rand -hex 48>
+POSTGRES_PASSWORD=<openssl rand -hex 24>
+WEB_BIND=127.0.0.1
+WEB_PORT=8080
+EXPOSE_RESET_TOKEN=false
+```
+
+Lalu:
+
+```bash
 docker compose up -d --build
 docker compose ps
 docker compose logs -f server
@@ -294,24 +314,70 @@ docker compose logs -f server
 Akses web di <http://localhost:8080>. API tidak perlu dibuka langsung; Nginx sudah mem-proxy
 `/api/`.
 
+### Homelab headless: akses dari perangkat lain di LAN
+
+Mesin headless biasanya diakses dari laptop/HP, bukan dari `localhost`. Ubah `.env`:
+
+```env
+NODE_ENV=production
+# HTTP di LAN tidak boleh memakai cookie Secure, kalau tidak login akan
+# terlihat berhasil tetapi cookie auth langsung dibuang browser.
+COOKIE_SECURE=false
+CLIENT_ORIGIN=http://192.168.1.10:9999,http://localhost:9999
+WEB_BIND=0.0.0.0
+WEB_PORT=9999
+# production mewajibkan email reset password
+EMAIL_PROVIDER_API_KEY=<api-key-resend>
+EMAIL_FROM="LRC MIS <server@domain-terverifikasi>"
+```
+
+Ganti `192.168.1.10` dengan IP LAN mesin (`ip -4 addr show`). Akses web di
+`http://192.168.1.10:9999`. Karena UI dan `/api` berada di origin yang sama, mengganti IP atau
+port tidak akan memicu error CORS selama `COOKIE_SECURE` sesuai skema yang dipakai.
+
+Jika tidak ingin mengonfigurasi Resend, gunakan `NODE_ENV=development` untuk homelab LAN. Mode ini
+melewati validasi email production, tetapi jangan dipakai untuk deployment yang terbuka ke
+internet.
+
+Batasi akses port web dengan firewall host, misalnya:
+
+```bash
+sudo ufw allow from 192.168.1.0/24 to any port 9999 proto tcp
+```
+
+Jangan buka port `4000` (API) atau `5433` (PostgreSQL) ke LAN; keduanya sengaja di-bind ke
+`127.0.0.1`.
+
 Membuat administrator di container:
 
 ```bash
 docker compose exec server node dist/prisma/setup-primary-admin.js --email admin@lrcmis.id
 ```
 
+Password awal dicetak satu kali. Untuk menentukan password sendiri:
+
+```bash
+docker compose exec -e PRIMARY_ADMIN_PASSWORD='Ganti-Dengan-Password-Kuat-123' \
+  server node dist/prisma/setup-primary-admin.js --email admin@lrcmis.id
+```
+
 Refresh reference data secara manual:
 
 ```bash
-docker compose run --rm seed
+docker compose run --rm --build seed
 ```
+
+`--build` wajib dipakai bila image `seed` belum pernah dibuat atau sudah lama. Service ini berada
+di profile `tools`, jadi tidak ikut dibangun oleh `docker compose up -d --build`; tanpa `--build`
+perintah dapat memakai image lama dan gagal dengan `spawn tsx ENOENT`.
 
 `seed` tidak membuat akun administrator. Gunakan perintah `setup-primary-admin` di atas.
 
-> **Status verifikasi:** Docker Compose sudah diuji di mesin pengembangan dengan Docker 29.9.2 dan
-> Compose v5.6.1. Build image, migrasi Prisma, seed referensi, healthcheck API, login melalui Nginx,
-> serta request API setelah container `server` dibuat ulang berhasil tanpa 502. Langkah Caddy dan
-> DNS production tetap perlu dijalankan di server Arch sesuai tutorial di bawah.
+> **Status verifikasi:** Docker Compose diuji dengan Docker 29.9.2 dan Compose v5.6.1. Build image,
+> migrasi Prisma, seed referensi, healthcheck API, login melalui Nginx, dan request API setelah
+> container `server` dibuat ulang berhasil tanpa 502. Jalur yang diverifikasi di mesin homelab:
+> LAN HTTP dengan `COOKIE_SECURE=false`. Jalur HTTPS di belakang Caddy/Cloudflare Tunnel mengikuti
+> konfigurasi yang sama, tetapi tetap perlu diuji di server masing-masing.
 
 ---
 
@@ -496,8 +562,8 @@ docker compose exec server node dist/prisma/setup-primary-admin.js \
   --email admin@kisaragilice.my.id --reset-password
 ```
 
-Ini adalah langkah yang benar untuk membuat admin. `docker compose run --rm seed` hanya me-refresh
-data referensi dan tidak membuat akun.
+Ini adalah langkah yang benar untuk membuat admin. Service `seed` hanya me-refresh data referensi
+dan tidak membuat akun.
 
 ### 7.9 Konfigurasi Caddy dan HTTPS
 
@@ -613,10 +679,13 @@ docker compose logs --tail=150 server
 
 Biasanya `server` tidak pernah benar-benar start karena environment production tidak valid:
 
-- `COOKIE_SECURE=false` saat `NODE_ENV=production`,
 - `JWT_SECRET` masih memakai nilai contoh,
+- `COOKIE_SECURE=false` padahal `CLIENT_ORIGIN` hanya berisi HTTPS,
 - `EXPOSE_RESET_TOKEN=true`,
 - `EMAIL_PROVIDER_API_KEY` atau `EMAIL_FROM` kosong.
+
+Catatan: `COOKIE_SECURE=false` **diizinkan** di production jika `CLIENT_ORIGIN` memakai `http://`
+(homelab LAN). API hanya menulis peringatan.
 
 Perbaiki `.env`, lalu recreate:
 
@@ -624,6 +693,34 @@ Perbaiki `.env`, lalu recreate:
 docker compose up -d --force-recreate server web
 docker compose logs -f server
 ```
+
+**Login gagal (500/403) dengan log `Origin tidak diizinkan oleh CORS`**
+
+Penyebabnya `CLIENT_ORIGIN` tidak cocok dengan alamat yang dibuka di browser. Sejak perbaikan ini,
+request same-origin lewat Nginx otomatis diterima, tetapi origin berbeda tetap harus terdaftar:
+
+```env
+# pisahkan dengan koma, tanpa trailing slash
+CLIENT_ORIGIN=http://192.168.1.10:9999,http://localhost:9999
+```
+
+Setelah mengubah `.env`:
+
+```bash
+docker compose up -d --force-recreate server
+curl -i -X POST http://127.0.0.1:9999/api/v1/auth/login \
+  -H 'Origin: http://192.168.1.10:9999' -H 'Content-Type: application/json' \
+  --data '{"email":"admin@lrcmis.id","password":"PASSWORD_ANDA"}'
+```
+
+**Login seolah berhasil tetapi langsung kembali ke halaman login / semua request 401**
+
+Cookie auth tidak tersimpan. Biasanya karena `COOKIE_SECURE=true` tetapi web dibuka lewat HTTP.
+Untuk LAN HTTP set `COOKIE_SECURE=false`, lalu recreate `server`. Gunakan `true` hanya jika web
+benar-benar diakses lewat HTTPS.
+
+Cek juga response login: cookie `lrcmis_token` harus punya `HttpOnly; SameSite=Lax` dan **tidak**
+punya atribut `Secure` saat memakai HTTP.
 
 **Web bisa dibuka tetapi semua request API 502**
 
@@ -780,6 +877,8 @@ Uang memakai `NUMERIC(12,2)`, primary key UUID, timestamp `TIMESTAMPTZ`, dan tip
 
 Backend memakai PostgreSQL test sungguhan (`lrcmis_test`), bukan mock.
 
+Dengan PostgreSQL lokal:
+
 ```bash
 # Satu kali
 createdb -U postgres lrcmis_test
@@ -793,6 +892,26 @@ npm test
 npm run test:server
 npm run test -w client
 ```
+
+Dengan PostgreSQL dari Docker Compose (homelab):
+
+```bash
+set -a; . ./.env; set +a
+
+# Satu kali: buat database test terpisah
+docker compose exec db createdb -U lrcmis lrcmis_test
+
+# Terapkan skema ke lrcmis_test
+DATABASE_URL="postgresql://lrcmis:${POSTGRES_PASSWORD}@127.0.0.1:5433/lrcmis_test?schema=public" \
+  npx prisma migrate deploy --schema server/prisma/schema.prisma
+
+# Jalankan test backend
+TEST_DATABASE_URL="postgresql://lrcmis:${POSTGRES_PASSWORD}@127.0.0.1:5433/lrcmis_test?schema=public" \
+  npm run test:server
+```
+
+`TEST_DATABASE_URL` dibaca oleh `server/vitest.config.ts`. Suite test melakukan `TRUNCATE` pada
+seluruh tabel, jadi **jangan pernah** mengarahkannya ke database `lrcmis` produksi.
 
 Cakupan backend antara lain:
 
@@ -834,7 +953,8 @@ Checklist production:
 3. Batasi `CLIENT_ORIGIN` ke origin web yang benar.
 4. Jalankan `prisma migrate deploy` saat deployment (sudah otomatis di Docker).
 5. Backup PostgreSQL dan rotasi kredensial secara berkala.
-6. Jangan commit `.env`, API key, atau password database.
+6. Jangan commit `.env`, API key, password database, atau file cookie/token hasil debugging.
+7. Pastikan `.env` dan `server/.env` bermode `600` (`chmod 600 .env server/.env`).
 
 ---
 
@@ -863,9 +983,9 @@ Checklist production:
   `server/.env` benar.
 - **`Environment variable not found: DATABASE_URL`:** jalankan perintah Prisma dari `server/`
   atau lewat root script workspace.
-- **Cookie tidak tersimpan:** akses melalui origin frontend (`localhost:5173` atau
-  `localhost:8080`), bukan memanggil API dari origin lain. Periksa `CLIENT_ORIGIN` dan
-  `COOKIE_SECURE`.
+- **Cookie tidak tersimpan:** pastikan `COOKIE_SECURE` sesuai skema (false untuk HTTP, true untuk
+  HTTPS) dan akses UI lewat origin yang terdaftar di `CLIENT_ORIGIN`. Same-origin lewat Nginx
+  diterima otomatis, tetapi membuka API langsung dari origin lain akan ditolak.
 - **`Token CSRF tidak valid`:** reload aplikasi agar cookie CSRF diperbarui. Helper API frontend
   otomatis mengirim header `X-CSRF-Token`.
 - **Test gagal karena database kotor:** suite backend membersihkan database `lrcmis_test` saat
