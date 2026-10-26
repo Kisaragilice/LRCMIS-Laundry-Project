@@ -9,3 +9,4 @@ coverage/
 client/.vite
 server/prisma/*.db
 uploads/
+contoh-visual.pdf

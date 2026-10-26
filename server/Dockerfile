@@ -13,12 +13,15 @@ RUN npm run build -w server
 
 FROM node:22-alpine AS runtime
 WORKDIR /app
-ENV NODE_ENV=production
 
 COPY package.json package-lock.json ./
 COPY server/package.json ./server/package.json
 COPY client/package.json ./client/package.json
-RUN npm ci
+
+# Prisma CLI and tsx are needed by the migration/seed entrypoint and one-off tools.
+# Keep them installed in the runtime image; the image is larger but deployments work offline.
+RUN npm ci --include=dev
+ENV NODE_ENV=production
 
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma/client ./node_modules/@prisma/client

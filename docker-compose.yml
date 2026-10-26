@@ -4,15 +4,16 @@ services:
     container_name: lrcmis-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: lrcmis
-      POSTGRES_USER: lrcmis
-      POSTGRES_PASSWORD: lrcmis
+      POSTGRES_DB: ${POSTGRES_DB:-lrcmis}
+      POSTGRES_USER: ${POSTGRES_USER:-lrcmis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    # Bind to localhost only. The API reaches PostgreSQL through the Compose network.
     ports:
-      - "5433:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
     volumes:
       - lrcmis_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U lrcmis -d lrcmis"]
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 5s
       timeout: 5s
       retries: 12
@@ -27,22 +28,34 @@ services:
       db:
         condition: service_healthy
     environment:
-      NODE_ENV: production
+      NODE_ENV: ${NODE_ENV:-production}
       PORT: 4000
-      DATABASE_URL: postgresql://lrcmis:lrcmis@db:5432/lrcmis?schema=public
-      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-random-secret-at-least-32-characters}
-      JWT_EXPIRES_IN: 8h
-      CLIENT_ORIGIN: http://localhost:8080
-      COOKIE_SECURE: "false"
-      BUSINESS_TIMEZONE: Asia/Jakarta
-      MIN_WEIGHT_KG: "3"
-      WEIGHT_ROUNDING_KG: "0.5"
-      DEFAULT_DELIVERY_FEE: "5000"
-      RESERVATION_CANCEL_CUTOFF_HOURS: "2"
-      EXPOSE_RESET_TOKEN: "false"
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-lrcmis}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-lrcmis}?schema=public"
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      CLIENT_ORIGIN: ${CLIENT_ORIGIN:-http://localhost:8080}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      BUSINESS_TIMEZONE: ${BUSINESS_TIMEZONE:-Asia/Jakarta}
+      MIN_WEIGHT_KG: ${MIN_WEIGHT_KG:-3}
+      WEIGHT_ROUNDING_KG: ${WEIGHT_ROUNDING_KG:-0.5}
+      DEFAULT_DELIVERY_FEE: ${DEFAULT_DELIVERY_FEE:-5000}
+      RESERVATION_CANCEL_CUTOFF_HOURS: ${RESERVATION_CANCEL_CUTOFF_HOURS:-2}
+      EXPOSE_RESET_TOKEN: ${EXPOSE_RESET_TOKEN:-false}
+      EMAIL_PROVIDER_API_KEY: ${EMAIL_PROVIDER_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      WHATSAPP_API_URL: ${WHATSAPP_API_URL:-}
+      WHATSAPP_API_TOKEN: ${WHATSAPP_API_TOKEN:-}
+      PAYMENT_GATEWAY_KEY: ${PAYMENT_GATEWAY_KEY:-}
       RUN_SEED: ${RUN_SEED:-true}
+    # API is not exposed to the internet. Nginx proxies /api to this service.
     ports:
-      - "4000:4000"
+      - "127.0.0.1:${API_PORT:-4000}:4000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/api/v1/health >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   web:
     build:
@@ -51,11 +64,14 @@ services:
     container_name: lrcmis-web
     restart: unless-stopped
     depends_on:
-      - server
+      server:
+        condition: service_healthy
+    # Secure default: only a host reverse proxy (Caddy/Nginx) can reach port 8080.
     ports:
-      - "8080:80"
+      - "${WEB_BIND:-127.0.0.1}:${WEB_PORT:-8080}:80"
 
-  # One-off reference-data refresh: docker compose run --rm seed
+  # One-off reference-data refresh:
+  #   docker compose run --rm seed
   seed:
     build:
       context: .
@@ -65,9 +81,8 @@ services:
       db:
         condition: service_healthy
     environment:
-      NODE_ENV: production
-      DATABASE_URL: postgresql://lrcmis:lrcmis@db:5432/lrcmis?schema=public
-      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-random-secret-at-least-32-characters}
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-lrcmis}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-lrcmis}?schema=public"
     entrypoint: ["sh", "-c", "npx prisma migrate deploy --schema ./prisma/schema.prisma && npx prisma db seed"]
 
 volumes:
