@@ -49,7 +49,8 @@ export function AdminCustomerDetailPage() {
   if (customer.loading) return <LoadingState label="Memuat detail pelanggan..." />;
   if (customer.error || !customer.data) return <ErrorState message={customer.error ?? 'Pelanggan tidak ditemukan'} onRetry={customer.refetch} />;
   const data = customer.data;
-  const lifetime = data.orders.filter((order) => order.paymentStatus === 'paid').reduce((sum, order) => sum + order.totalAmount, 0);
+  const { addresses = [], orders = [], reservations = [], reviews = [] } = data;
+  const lifetime = orders.filter((order) => order.paymentStatus === 'paid').reduce((sum, order) => sum + order.totalAmount, 0);
 
   return (
     <div>
@@ -80,19 +81,19 @@ export function AdminCustomerDetailPage() {
             <dl className="mt-4">
               <KeyValue label="Email" value={<span className="inline-flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {data.email}</span>} />
               <KeyValue label="Telepon" value={data.phone ? <span className="inline-flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> {data.phone}</span> : '-'} />
-              <KeyValue label="Total pesanan" value={data.orders.length} />
+              <KeyValue label="Total pesanan" value={orders.length} />
               <KeyValue label="Nilai lunas" value={formatCurrency(lifetime)} />
-              <KeyValue label="Rating diberikan" value={data.reviews.length ? `${(data.reviews.reduce((s, r) => s + r.rating, 0) / data.reviews.length).toFixed(1)} (${data.reviews.length})` : '-'} />
+              <KeyValue label="Rating diberikan" value={reviews.length ? `${(reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)} (${reviews.length})` : '-'} />
             </dl>
           </Card>
 
           <Card className="p-5">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-ink-400">Alamat tersimpan</p>
-            {data.addresses.length === 0 ? (
+            {addresses.length === 0 ? (
               <p className="mt-3 text-sm text-ink-400">Belum ada alamat.</p>
             ) : (
               <div className="mt-3 space-y-2">
-                {data.addresses.map((address) => (
+                {addresses.map((address) => (
                   <div key={address.id} className="rounded-xl border border-ink-100 p-3">
                     <p className="flex items-center gap-1.5 text-sm font-semibold text-ink-900">
                       <MapPin className="h-3.5 w-3.5 text-brand-700" /> {address.label || 'Alamat'}
@@ -108,11 +109,11 @@ export function AdminCustomerDetailPage() {
 
           <Card className="p-5">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-ink-400">Ulasan terakhir</p>
-            {data.reviews.length === 0 ? (
+            {reviews.length === 0 ? (
               <p className="mt-3 text-sm text-ink-400">Belum ada ulasan.</p>
             ) : (
               <div className="mt-3 space-y-2">
-                {data.reviews.map((review) => (
+                {reviews.map((review) => (
                   <div key={review.id} className="rounded-xl bg-ink-50 p-3">
                     <Stars value={review.rating} size="sm" />
                     <p className="mt-1 text-xs leading-relaxed text-ink-600">{review.comment || 'Tanpa komentar.'}</p>
@@ -131,13 +132,13 @@ export function AdminCustomerDetailPage() {
               <Link to={`/admin/pesanan?search=${encodeURIComponent(data.email)}`} className="text-xs font-bold text-brand-700">Cari di pesanan →</Link>
             </div>
             <div className="mt-4">
-              {data.orders.length === 0 ? (
+              {orders.length === 0 ? (
                 <p className="text-sm text-ink-400">Belum ada pesanan.</p>
               ) : (
                 <DataTable>
                   <thead><tr><Th>Kode</Th><Th>Status</Th><Th className="text-right">Total</Th><Th>Dibuat</Th><Th /></tr></thead>
                   <tbody className="divide-y divide-ink-50">
-                    {data.orders.map((order) => (
+                    {orders.map((order) => (
                       <tr key={order.id}>
                         <Td className="font-semibold text-ink-900">{order.orderCode}</Td>
                         <Td><StatusBadge status={order.orderStatus} label={orderStatusLabel[order.orderStatus] ?? order.orderStatus} /></Td>
@@ -155,13 +156,13 @@ export function AdminCustomerDetailPage() {
           <Card className="p-5 sm:p-6">
             <h2 className="text-base font-bold text-ink-950">Reservasi</h2>
             <div className="mt-4">
-              {data.reservations.length === 0 ? (
+              {reservations.length === 0 ? (
                 <p className="text-sm text-ink-400">Belum ada reservasi.</p>
               ) : (
                 <DataTable>
                   <thead><tr><Th>Kode</Th><Th>Jadwal</Th><Th>Metode</Th><Th>Item</Th><Th>Status</Th></tr></thead>
                   <tbody className="divide-y divide-ink-50">
-                    {data.reservations.map((reservation) => (
+                    {reservations.map((reservation) => (
                       <tr key={reservation.id}>
                         <Td className="font-semibold text-ink-900">{reservation.reservationCode}</Td>
                         <Td className="text-xs">{formatDate(reservation.timeSlot.slotDate)} · {reservation.timeSlot.startTime}</Td>

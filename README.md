@@ -1076,7 +1076,7 @@ Cakupan backend antara lain:
 
 Frontend mencakup format IDR/tanggal, schema Zod, rendering design system, dan API helper.
 
-**Hasil terbaru: backend 44 passed, frontend 17 passed.**
+**Hasil terbaru: backend 45 passed, frontend 17 passed.**
 
 ---
 

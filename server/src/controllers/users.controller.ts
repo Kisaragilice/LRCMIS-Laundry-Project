@@ -229,6 +229,12 @@ export async function getCustomer(req: Request, res: Response) {
       itemCount: reservation.items.length,
       createdAt: reservation.createdAt,
     })),
+    reviews: user.reviews.map((review) => ({
+      id: review.id,
+      rating: review.rating,
+      comment: review.comment,
+      createdAt: review.createdAt,
+    })),
   });
 }
 

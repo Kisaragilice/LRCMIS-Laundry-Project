@@ -252,6 +252,25 @@ describe('ownership and privacy', () => {
     expect(response.status).toBe(200);
     expect(response.body.data).toEqual([]);
   });
+
+  it('includes the review list in the admin customer detail response', async () => {
+    const { order } = await createOrder(customerA, admin, { slotId: slotMainId, serviceId: kgServiceId });
+    const review = await prisma.review.create({
+      data: { orderId: order.id, userId: customerAId, rating: 5, comment: 'Wanginya tahan lama' },
+    });
+
+    const response = await client(admin, 'get', `/api/v1/admin/customers/${customerAId}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.data.reviews).toEqual([
+      {
+        id: review.id,
+        rating: 5,
+        comment: 'Wanginya tahan lama',
+        createdAt: expect.any(String),
+      },
+    ]);
+  });
 });
 
 describe('concurrency-safe reservation capacity', () => {
