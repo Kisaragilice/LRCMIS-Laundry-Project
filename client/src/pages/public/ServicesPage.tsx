@@ -29,7 +29,7 @@ export function ServicesPage() {
             <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/80 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-brand-700">
               <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Katalog layanan
             </span>
-            <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-ink-950 sm:text-4xl lg:text-5xl">Layanan & harga</h1>
+            <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-ink-950 sm:text-4xl lg:text-5xl">Layanan</h1>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-600">
               Semua harga dalam Rupiah. Untuk layanan berbasis berat, tagihan dihitung dari berat aktual saat cucian
               diterima dengan pembulatan {config.data?.weightRoundingKg ?? 0.5} kg.

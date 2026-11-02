@@ -5,6 +5,8 @@ import { formatDateTime, orderStatusLabel } from '../lib/format';
 import type { TimelineEntry } from '../lib/types';
 
 export function Brand({ compact = false, inverted = false }: { compact?: boolean; inverted?: boolean }) {
+  const markSrc = inverted ? '/aset/brand/logo-mark-brand.svg' : '/aset/brand/logo-mark-white.svg';
+
   return (
     <Link to="/" className="group inline-flex items-center gap-2.5" aria-label="LRCMIS beranda">
       <span
@@ -13,10 +15,7 @@ export function Brand({ compact = false, inverted = false }: { compact?: boolean
           inverted ? 'bg-white text-brand-700' : 'bg-gradient-to-br from-brand-500 to-accent-500 text-white',
         )}
       >
-        <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true" fill="none">
-          <path d="M5 8.5c0-2.5 1.9-4.5 4.2-4.5 1.6 0 3 1 3.7 2.4C13.6 5 15 4 16.6 4 19 4 21 6 21 8.5c0 4.3-4.6 7.1-8.1 10.2L12 19.5l-.9-.8C7.6 15.6 3 12.8 3 8.5c0-.7.2-1.3.5-1.9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M8.3 16.8c1.2-1.1 2.3-2.3 3.3-3.5M10.2 9.4c.5.9.7 1.9.7 2.9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity=".5" />
-        </svg>
+        <img src={markSrc} alt="" className="h-5 w-5" draggable={false} />
       </span>
       {!compact && (
         <span className="leading-tight">

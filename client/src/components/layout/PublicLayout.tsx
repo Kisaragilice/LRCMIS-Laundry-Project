@@ -7,7 +7,7 @@ import { useAuth } from '../../lib/auth';
 
 const navItems = [
   { to: '/', label: 'Beranda' },
-  { to: '/layanan', label: 'Layanan & harga' },
+  { to: '/layanan', label: 'Layanan' },
   { to: '/cara-kerja', label: 'Cara kerja' },
   { to: '/kontak', label: 'Kontak' },
 ];
@@ -135,7 +135,7 @@ export function PublicLayout() {
             <p className="mt-4 text-xs font-semibold text-accent-700">Melayani setiap hari · 07.00–21.00 WIB · Bandar Lampung</p>
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.15em] text-ink-400">Layanan</p>
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-ink-400">Menu</p>
             <ul className="mt-4 space-y-2 text-sm text-ink-600">
               {navItems.slice(1).map((item) => (
                 <li key={item.to}>
@@ -147,6 +147,16 @@ export function PublicLayout() {
               <li>
                 <Link to="/register" className="transition hover:text-brand-700">
                   Registrasi pelanggan
+                </Link>
+              </li>
+              <li>
+                <Link to="https://github.com/Kisaragilice" className="transition hover:text-brand-700">
+                  Github profile
+                </Link>
+              </li>
+              <li>
+                <Link to="https://raw.githubusercontent.com/Kisaragilice/LRCMIS-Laundry-Project/refs/heads/main/LICENSE" className="transition hover:text-brand-700">
+                  License
                 </Link>
               </li>
             </ul>
@@ -171,7 +181,7 @@ export function PublicLayout() {
           </div>
         </div>
         <div className="border-t border-ink-100 px-4 py-5 text-center text-xs text-ink-400">
-          © {new Date().getFullYear()} LRCMIS. Dibangun untuk kebutuhan akademik dan operasional laundry.
+          © {new Date().getFullYear()} LRCMIS MIT License. Laundry Reservation & Customer Management Information System.
         </div>
       </footer>
     </div>

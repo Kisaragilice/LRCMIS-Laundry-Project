@@ -1090,6 +1090,26 @@ npm start            # jalankan API hasil build (server/dist/src/index.js)
 Client output ada di `client/dist`. API hanya menyajikan `/api/*`; SPA disajikan terpisah melalui
 Nginx/Docker web service.
 
+### Aset gambar
+
+Semua aset bergambar disimpan di `client/public/aset` dan disalin apa adanya ke `client/dist/aset`
+saat build. Jangan menaruh gambar di `src` atau root `public`.
+
+```text
+client/public/aset/
+├── brand/
+│   ├── favicon.svg
+│   ├── logo-mark-brand.svg
+│   └── logo-mark-white.svg
+└── backgrounds/
+    ├── contact-panel.svg
+    ├── dashboard-sidebar.svg
+    └── soft-grid.svg
+```
+
+Referensi di aplikasi memakai URL absolut, misalnya `/aset/brand/favicon.svg`. Background Tailwind
+juga merujuk ke file yang sama melalui `client/tailwind.config.js`.
+
 Checklist production:
 
 1. Gunakan `JWT_SECRET` acak yang kuat dan `COOKIE_SECURE=true` di belakang HTTPS.

@@ -175,7 +175,7 @@ export function DashboardLayout() {
   if (!user) return null;
 
   const sidebar = (
-    <div className="flex h-full flex-col bg-[linear-gradient(180deg,#071226_0%,#0c1d3b_52%,#0d2b45_100%)]">
+    <div className="flex h-full flex-col bg-dashboard-sidebar bg-sidebar">
       <div className="flex h-[68px] items-center justify-between border-b border-white/10 px-5">
         <Brand inverted />
         <button

@@ -72,11 +72,14 @@ export default {
         'hero-glow':
           'radial-gradient(circle at 12% 15%, rgba(47, 134, 246, 0.16), transparent 42%), radial-gradient(circle at 88% 10%, rgba(18, 168, 167, 0.14), transparent 38%)',
         'brand-gradient': 'linear-gradient(120deg, #1856d6 0%, #1a6bea 45%, #12a8a7 100%)',
-        'soft-grid':
-          'linear-gradient(rgba(47, 134, 246, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(47, 134, 246, 0.06) 1px, transparent 1px)',
+        'soft-grid': "url('/aset/backgrounds/soft-grid.svg')",
+        'dashboard-sidebar': "url('/aset/backgrounds/dashboard-sidebar.svg')",
+        'contact-panel': "url('/aset/backgrounds/contact-panel.svg')",
       },
       backgroundSize: {
         grid: '28px 28px',
+        sidebar: '100% 100%',
+        panel: '100% 100%',
       },
     },
   },

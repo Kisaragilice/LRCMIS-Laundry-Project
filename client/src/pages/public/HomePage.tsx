@@ -30,7 +30,7 @@ const flow = [
 const values = [
   { icon: Clock, title: 'Jadwal yang pasti', text: 'Kapasitas slot dicek ulang oleh sistem, menjamin jadwal yang di pilih benar-benar tersedia.' },
   { icon: Wallet, title: 'Harga transparan', text: 'Rincian layanan, diskon, dan biaya antar terlihat sebelum pembayaran dicatat.' },
-  { icon: MapPin, title: 'Antar-jemput', text: 'Pilih drop-off atau pickup. Alamat tersimpan pada reservasi dan tugas kurir.' },
+  { icon: MapPin, title: 'Antar-jemput', text: 'Pilih drop-off atau pickup. Alamat tersimpan pada pemesanan akun dan tugas kurir.' },
   { icon: ShieldCheck, title: 'Status terlacak', text: 'Setiap perubahan status produksi tercatat pada timeline pesanan Anda.' },
 ];
 
@@ -38,7 +38,7 @@ const steps = [
   { icon: CalendarCheck, title: 'Pilih layanan & slot', text: 'Tentukan layanan, metode penyerahan, dan waktu yang tersedia.' },
   { icon: Truck, title: 'Antar atau dijemput', text: 'Serahkan cucian di outlet atau tunggu kurir datang.' },
   { icon: Droplets, title: 'Kami proses', text: 'Cucian ditimbang, dihitung, lalu dikerjakan sesuai tahapan.' },
-  { icon: PackageCheck, title: 'Terima & nilai', text: 'Bayar tunai atau transfer, lalu beri ulasan setelah selesai.' },
+  { icon: PackageCheck, title: 'Terima & nilai', text: 'Bayar cash atau transfer, lalu beri ulasan setelah selesai.' },
 ];
 
 export function HomePage() {
@@ -62,7 +62,7 @@ export function HomePage() {
             <div className="animate-fade-up">
               <span className="inline-flex items-center gap-2 rounded-full border border-brand-200/80 bg-white/80 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-700 shadow-sm">
                 <span className="h-1.5 w-1.5 rounded-full bg-accent-500" aria-hidden="true" />
-                Reservasi online · Pickup & delivery
+                Pemesanan online · Pickup & delivery
               </span>
               <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight text-ink-950 sm:text-5xl lg:text-[3.6rem]">
                 Laundry rapi,
@@ -76,12 +76,12 @@ export function HomePage() {
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link to="/register">
                   <Button size="lg" icon={<ArrowRight className="h-4 w-4" />}>
-                    Reservasi sekarang
+                    Pesan Sekarang
                   </Button>
                 </Link>
                 <Link to="/layanan">
                   <Button variant="outline" size="lg">
-                    Cek harga layanan
+                    Cek layanan
                   </Button>
                 </Link>
               </div>
@@ -93,7 +93,7 @@ export function HomePage() {
                   <CheckCircle2 className="h-4 w-4 text-accent-600" aria-hidden="true" /> Status pesanan transparan
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-accent-600" aria-hidden="true" /> Tunai atau transfer
+                  <CheckCircle2 className="h-4 w-4 text-accent-600" aria-hidden="true" /> Cash atau transfer
                 </span>
               </div>
 
@@ -157,8 +157,8 @@ export function HomePage() {
                     <ShieldCheck className="h-4.5 w-4.5 h-[18px] w-[18px]" aria-hidden="true" />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-xs font-bold">Kapasitas slot terkunci saat reservasi</p>
-                    <p className="mt-0.5 text-[11px] text-brand-100/70">Tidak ada slot ganda. Status tersimpan pada riwayat pesanan.</p>
+                    <p className="text-xs font-bold">Kapasitas slot terkunci saat pemesanan</p>
+                    <p className="mt-0.5 text-[11px] text-brand-100/70">Tidak ada slot double. Status tersimpan pada riwayat pemesanan.</p>
                   </div>
                 </div>
               </div>
@@ -329,7 +329,7 @@ export function HomePage() {
                 <span className="eyebrow">Kunjungi outlet</span>
                 <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-ink-950">Antar langsung, tanpa perlu menunggu kurir.</h2>
                 <p className="mt-3 max-w-lg text-sm leading-relaxed text-ink-600">
-                  Outlet menerima drop-off sesuai slot reservasi. Untuk pickup, pastikan alamat dan nomor telepon sudah
+                  Outlet menerima drop-off sesuai slot pemesanan. Untuk pickup, pastikan alamat dan nomor telepon sudah
                   tersimpan di profil agar kurir dapat menghubungi Anda.
                 </p>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">

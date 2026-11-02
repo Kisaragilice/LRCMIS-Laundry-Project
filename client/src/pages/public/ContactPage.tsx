@@ -79,8 +79,7 @@ export function ContactPage() {
               Parkir tersedia. Silakan datang sesuai slot reservasi agar tidak menunggu.
             </p>
           </div>
-          <div className="relative h-72 bg-[linear-gradient(135deg,#e6efec_0%,#f5f1e8_50%,#dbe7e4_100%)] p-6">
-            <div className="absolute inset-0 opacity-40 [background-image:linear-gradient(#0a5453_1px,transparent_1px),linear-gradient(90deg,#0a5453_1px,transparent_1px)] [background-size:38px_38px]" />
+          <div className="relative h-72 bg-contact-panel bg-panel p-6">
             <div className="relative flex h-full flex-col items-center justify-center text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-900 text-white shadow-soft">
                 <MapPin className="h-7 w-7" />
