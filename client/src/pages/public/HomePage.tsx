@@ -28,7 +28,7 @@ const flow = [
 ];
 
 const values = [
-  { icon: Clock, title: 'Jadwal yang pasti', text: 'Kapasitas slot dicek ulang oleh server, jadi jadwal yang Anda pilih benar-benar tersedia.' },
+  { icon: Clock, title: 'Jadwal yang pasti', text: 'Kapasitas slot dicek ulang oleh sistem, menjamin jadwal yang di pilih benar-benar tersedia.' },
   { icon: Wallet, title: 'Harga transparan', text: 'Rincian layanan, diskon, dan biaya antar terlihat sebelum pembayaran dicatat.' },
   { icon: MapPin, title: 'Antar-jemput', text: 'Pilih drop-off atau pickup. Alamat tersimpan pada reservasi dan tugas kurir.' },
   { icon: ShieldCheck, title: 'Status terlacak', text: 'Setiap perubahan status produksi tercatat pada timeline pesanan Anda.' },
