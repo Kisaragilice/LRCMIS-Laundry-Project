@@ -129,7 +129,7 @@ export function PublicLayout() {
           <div>
             <Brand />
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-500">
-              Reservasi laundry terjadwal dengan pelacakan status, pickup & delivery, serta pembayaran yang tercatat
+              Pemesanan terjadwal dengan pelacakan status, pickup & delivery, serta pembayaran yang tercatat
               rapi untuk pelanggan dan tim operasional.
             </p>
             <p className="mt-4 text-xs font-semibold text-accent-700">Melayani setiap hari · 07.00–21.00 WIB · Bandar Lampung</p>

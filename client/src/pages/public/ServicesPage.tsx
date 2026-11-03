@@ -31,7 +31,7 @@ export function ServicesPage() {
             </span>
             <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-ink-950 sm:text-4xl lg:text-5xl">Layanan</h1>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-600">
-              Semua harga dalam Rupiah. Untuk layanan berbasis berat, tagihan dihitung dari berat aktual saat cucian
+              Untuk layanan berbasis berat, tagihan dihitung dari berat aktual saat cucian
               diterima dengan pembulatan {config.data?.weightRoundingKg ?? 0.5} kg.
             </p>
           </div>
