@@ -110,40 +110,40 @@ export function ServicesPage() {
           ) : filtered.length === 0 ? (
             <EmptyState title="Layanan tidak ditemukan" description="Coba kata kunci atau satuan lain." />
           ) : (
-            <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((service) => (
-                <StaggerItem key={service.id} className="h-full">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((service, index) => (
+                <Reveal key={service.id} className="h-full" delay={Math.min(index, 5) * 0.05} distance={18}>
                   <Card className="group flex h-full flex-col p-6 transition duration-300 ease-out hover:-translate-y-1 hover:border-brand-200 hover:shadow-soft">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 transition-transform duration-300 group-hover:scale-105">
-                      <Droplets className="h-6 w-6" aria-hidden="true" />
-                    </div>
-                    <span className="rounded-full bg-sand-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-500">
-                      per {unitLabel[service.pricingUnit] ?? service.pricingUnit}
-                    </span>
-                  </div>
-                  <h2 className="mt-4 text-lg font-bold text-ink-950">{service.name}</h2>
-                  <p className="mt-1 flex-1 text-sm leading-relaxed text-ink-500">
-                    {service.description || 'Layanan laundry dengan proses profesional.'}
-                  </p>
-                  <div className="mt-5 flex items-end justify-between border-t border-ink-100 pt-4">
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">Harga</p>
-                      <p className="text-xl font-extrabold text-ink-950">
-                        {formatCurrency(service.price)}
-                        <span className="ml-1 text-xs font-medium text-ink-400">/{unitLabel[service.pricingUnit]}</span>
-                      </p>
-                    </div>
-                    {service.estimatedHours ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-sand-50 px-2 py-1 text-[11px] font-semibold text-ink-500">
-                        <Clock className="h-3.5 w-3.5" aria-hidden="true" /> ±{service.estimatedHours} jam
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 transition-transform duration-300 group-hover:scale-105">
+                        <Droplets className="h-6 w-6" aria-hidden="true" />
+                      </div>
+                      <span className="rounded-full bg-sand-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-500">
+                        per {unitLabel[service.pricingUnit] ?? service.pricingUnit}
                       </span>
-                    ) : null}
-                  </div>
-                </Card>
-              </StaggerItem>
+                    </div>
+                    <h2 className="mt-4 text-lg font-bold text-ink-950">{service.name}</h2>
+                    <p className="mt-1 flex-1 text-sm leading-relaxed text-ink-500">
+                      {service.description || 'Layanan laundry dengan proses profesional.'}
+                    </p>
+                    <div className="mt-5 flex items-end justify-between border-t border-ink-100 pt-4">
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">Harga</p>
+                        <p className="text-xl font-extrabold text-ink-950">
+                          {formatCurrency(service.price)}
+                          <span className="ml-1 text-xs font-medium text-ink-400">/{unitLabel[service.pricingUnit]}</span>
+                        </p>
+                      </div>
+                      {service.estimatedHours ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-sand-50 px-2 py-1 text-[11px] font-semibold text-ink-500">
+                          <Clock className="h-3.5 w-3.5" aria-hidden="true" /> ±{service.estimatedHours} jam
+                        </span>
+                      ) : null}
+                    </div>
+                  </Card>
+                </Reveal>
               ))}
-            </Stagger>
+            </div>
           )}
         </div>
 

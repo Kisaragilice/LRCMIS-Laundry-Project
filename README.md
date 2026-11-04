@@ -1182,3 +1182,58 @@ Checklist production:
   pembayaran berupa teks.
 - **Concurrency** ditegakkan untuk kapasitas slot, idempotensi pembayaran, penerimaan, dan transisi
   task/order melalui row lock. Entitas lain mengandalkan transaksi Prisma dan unique constraint.
+
+---
+
+## 17. Peningkatan yang direncanakan (non-kritis)
+
+Bagian ini mencatat hal yang layak diperbaiki di masa depan, tetapi **bukan bug fungsional** dan
+tidak menghambat pemakaian saat ini.
+
+### 17.1 Code-splitting halaman admin dan Recharts
+
+Saat ini bundle client masih sekitar **1,3 MB minified (±354 kB gzip)**, sehingga Vite memberi
+peringatan chunk lebih dari 500 kB. Semua fitur tetap berjalan normal.
+
+Dampaknya:
+
+- Unduhan dan parsing JavaScript awal lebih besar, terutama untuk pengunjung publik yang tidak
+  membuka dashboard admin.
+- Pada jaringan lambat atau perangkat kelas bawah, first load bisa terasa lebih berat.
+- Setelah cache browser terisi, dampaknya jauh berkurang.
+- Tidak ada risiko kehilangan data atau kegagalan fungsi; ini murni masalah performa awal.
+
+Kandidat perbaikan:
+
+- Lazy-load route admin/owner/staff/kurir dengan `React.lazy` dan `Suspense`.
+- Muat komponen Recharts hanya saat halaman dashboard/laporan dibuka.
+- Pisahkan vendor besar melalui `manualChunks` di konfigurasi Vite.
+- Ukur ulang hasil build setelah perubahan; target praktis adalah tidak ada warning chunk besar
+  atau setidaknya halaman publik tidak ikut memuat kode Recharts.
+
+Prioritas: **rendah sampai menengah**, tergantung trafik publik dan target performa.
+
+### 17.2 Aksesibilitas menu mobile
+
+Menu mobile saat ini bisa dibuka/tutup lewat tombol hamburger dan navigasi, tetapi belum:
+
+- ditutup dengan tombol `Escape`,
+- memindahkan fokus ke menu saat dibuka,
+- menjebak fokus di dalam menu saat terbuka,
+- mengembalikan fokus ke tombol hamburger saat ditutup.
+
+Dampaknya:
+
+- Pengguna sentuh tidak terpengaruh.
+- Pengguna keyboard atau screen reader bisa lebih mudah keluar dari konteks menu dan harus
+  menavigasi ulang.
+- Konten di belakang menu masih dapat dijangkau fokus keyboard saat menu terbuka.
+
+Kandidat perbaikan:
+
+- Tambahkan listener `Escape` untuk menutup menu.
+- Simpan referensi tombol pembuka dan kembalikan fokus saat menu ditutup.
+- Trap fokus di dalam panel menu selama terbuka.
+- Opsional: tutup saat klik di luar panel dan kelola `aria-hidden` konten latar.
+
+Prioritas: **rendah untuk pengguna umum, menengah untuk target aksesibilitas/WCAG**.
