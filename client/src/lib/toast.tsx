@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { CheckCircle2, Info, X, XCircle } from 'lucide-react';
 import { cn } from '../components/ui';
+import { springSnappy } from './motion';
 
 type ToastType = 'success' | 'error' | 'info';
 interface Toast {
@@ -28,31 +30,38 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={value}>
       {children}
       <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[100] flex flex-col items-center gap-2 px-4 sm:items-end sm:pr-6">
-        {toasts.map((item) => (
-          <div
-            key={item.id}
-            role="status"
-            className={cn(
-              'pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl border px-4 py-3 text-sm shadow-soft backdrop-blur',
-              item.type === 'success' && 'border-brand-200 bg-brand-50/95 text-brand-900',
-              item.type === 'error' && 'border-red-200 bg-red-50/95 text-red-900',
-              item.type === 'info' && 'border-ink-200 bg-white/95 text-ink-800',
-            )}
-          >
-            {item.type === 'success' && <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />}
-            {item.type === 'error' && <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />}
-            {item.type === 'info' && <Info className="mt-0.5 h-5 w-5 shrink-0 text-ink-500" />}
-            <p className="flex-1 leading-relaxed">{item.message}</p>
-            <button
-              type="button"
-              aria-label="Tutup notifikasi"
-              className="rounded-full p-1 text-current/60 hover:bg-black/5"
-              onClick={() => setToasts((current) => current.filter((toastItem) => toastItem.id !== item.id))}
+        <AnimatePresence initial={false}>
+          {toasts.map((item) => (
+            <motion.div
+              key={item.id}
+              layout
+              role="status"
+              initial={{ opacity: 0, y: 16, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.97 }}
+              transition={springSnappy}
+              className={cn(
+                'pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl border px-4 py-3 text-sm shadow-soft backdrop-blur',
+                item.type === 'success' && 'border-brand-200 bg-brand-50/95 text-brand-900',
+                item.type === 'error' && 'border-red-200 bg-red-50/95 text-red-900',
+                item.type === 'info' && 'border-ink-200 bg-white/95 text-ink-800',
+              )}
             >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        ))}
+              {item.type === 'success' && <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />}
+              {item.type === 'error' && <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />}
+              {item.type === 'info' && <Info className="mt-0.5 h-5 w-5 shrink-0 text-ink-500" />}
+              <p className="flex-1 leading-relaxed">{item.message}</p>
+              <button
+                type="button"
+                aria-label="Tutup notifikasi"
+                className="rounded-full p-1 text-current/60 hover:bg-black/5"
+                onClick={() => setToasts((current) => current.filter((toastItem) => toastItem.id !== item.id))}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
     </ToastContext.Provider>
   );

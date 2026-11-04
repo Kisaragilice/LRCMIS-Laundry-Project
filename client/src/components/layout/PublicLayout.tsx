@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, CalendarCheck, Menu, X } from 'lucide-react';
 import { Brand } from '../common';
 import { Button, cn } from '../ui';
 import { useAuth } from '../../lib/auth';
+import { PageTransition } from '../motion/PageTransition';
+import { smoothEase, springSnappy } from '../../lib/motion';
 
 const navItems = [
   { to: '/', label: 'Beranda' },
@@ -43,7 +46,13 @@ export function PublicLayout() {
                 {({ isActive }) => (
                   <>
                     {item.label}
-                    {isActive && <span className="absolute inset-x-3.5 -bottom-[23px] h-0.5 rounded-full bg-brand-600" />}
+                    {isActive && (
+                      <motion.span
+                        layoutId="public-nav-underline"
+                        className="absolute inset-x-3.5 -bottom-[23px] h-0.5 rounded-full bg-brand-600"
+                        transition={springSnappy}
+                      />
+                    )}
                   </>
                 )}
               </NavLink>
@@ -72,56 +81,97 @@ export function PublicLayout() {
           <button
             type="button"
             onClick={() => setOpen((value) => !value)}
-            className="rounded-xl border border-ink-200 bg-white p-2 text-ink-700 md:hidden"
+            className="relative rounded-xl border border-ink-200 bg-white p-2 text-ink-700 transition-colors duration-200 hover:bg-sand-50 md:hidden"
             aria-label={open ? 'Tutup menu' : 'Buka menu'}
             aria-expanded={open}
+            aria-controls="public-mobile-menu"
           >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            <span className="relative block h-5 w-5" aria-hidden="true">
+              <motion.span
+                initial={false}
+                animate={{ opacity: open ? 0 : 1, rotate: open ? 90 : 0, scale: open ? 0.75 : 1 }}
+                transition={{ duration: 0.2, ease: smoothEase }}
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                <Menu className="h-5 w-5" />
+              </motion.span>
+              <motion.span
+                initial={false}
+                animate={{ opacity: open ? 1 : 0, rotate: open ? 0 : -90, scale: open ? 1 : 0.75 }}
+                transition={{ duration: 0.2, ease: smoothEase }}
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                <X className="h-5 w-5" />
+              </motion.span>
+            </span>
           </button>
         </div>
-        {open && (
-          <div className="border-t border-ink-100 bg-white px-4 pb-5 pt-3 md:hidden">
-            <nav className="flex flex-col gap-1">
-              {navItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.to === '/'}
-                  className={({ isActive }) =>
-                    cn(
-                      'rounded-xl px-3 py-2.5 text-sm font-semibold',
-                      isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-700 hover:bg-sand-50',
-                    )
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
-            <div className="mt-4 flex gap-2">
-              {user ? (
-                <Link to="/dashboard-redirect" className="flex-1">
-                  <Button className="w-full">Buka dashboard</Button>
-                </Link>
-              ) : (
-                <>
-                  <Link to="/login" className="flex-1">
-                    <Button variant="outline" className="w-full">
-                      Masuk
-                    </Button>
-                  </Link>
-                  <Link to="/register" className="flex-1">
-                    <Button className="w-full">Daftar</Button>
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        )}
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.div
+              key="public-mobile-menu"
+              id="public-mobile-menu"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{
+                height: { duration: 0.32, ease: smoothEase },
+                opacity: { duration: 0.22, ease: smoothEase },
+              }}
+              className="overflow-hidden md:hidden"
+            >
+              <motion.div
+                initial={{ y: -8, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -6, opacity: 0 }}
+                transition={{ duration: 0.28, ease: smoothEase }}
+                className="border-t border-ink-100 bg-white px-4 pb-5 pt-3"
+              >
+                <nav className="flex flex-col gap-1">
+                  {navItems.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      end={item.to === '/'}
+                      className={({ isActive }) =>
+                        cn(
+                          'rounded-xl px-3 py-2.5 text-sm font-semibold',
+                          isActive ? 'bg-brand-50 text-brand-700' : 'text-ink-700 hover:bg-sand-50',
+                        )
+                      }
+                    >
+                      {item.label}
+                    </NavLink>
+                  ))}
+                </nav>
+                <div className="mt-4 flex gap-2">
+                  {user ? (
+                    <Link to="/dashboard-redirect" className="flex-1">
+                      <Button className="w-full">Buka dashboard</Button>
+                    </Link>
+                  ) : (
+                    <>
+                      <Link to="/login" className="flex-1">
+                        <Button variant="outline" className="w-full">
+                          Masuk
+                        </Button>
+                      </Link>
+                      <Link to="/register" className="flex-1">
+                        <Button className="w-full">Daftar</Button>
+                      </Link>
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       <main className="flex-1">
-        <Outlet />
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
       </main>
 
       <footer className="border-t border-ink-100 bg-sand-50">

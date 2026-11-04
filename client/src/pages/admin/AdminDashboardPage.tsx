@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, useReducedMotion } from 'motion/react';
 import {
   Area,
   AreaChart,
@@ -52,6 +53,8 @@ import {
   todayIso,
 } from '../../lib/format';
 import type { DashboardData } from '../../lib/types';
+import { springSnappy } from '../../lib/motion';
+import { InViewChart } from '../../components/motion/InViewChart';
 
 type RangeKey = '7' | '30' | '90' | 'month';
 
@@ -88,6 +91,7 @@ export function AdminDashboardPage() {
   const { toast } = useToast();
   const [range, setRange] = useState<RangeKey>('30');
   const [confirming, setConfirming] = useState<string | null>(null);
+  const reduceMotion = useReducedMotion();
   const isAdmin = Boolean(user?.roles.includes('admin'));
   const { from, to } = rangeBounds(range);
   const dashboard = useApi<DashboardData>(`/admin/dashboard?from=${from}&to=${to}`, [from, to]);
@@ -162,11 +166,18 @@ export function AdminDashboardPage() {
               type="button"
               onClick={() => setRange(option.key)}
               aria-pressed={range === option.key}
-              className={`whitespace-nowrap rounded-lg px-3.5 py-2 text-xs font-bold transition ${
-                range === option.key ? 'bg-white text-brand-700 shadow-sm' : 'text-ink-500 hover:text-ink-800'
+              className={`relative whitespace-nowrap rounded-lg px-3.5 py-2 text-xs font-bold transition ${
+                range === option.key ? 'text-brand-700' : 'text-ink-500 hover:text-ink-800'
               }`}
             >
-              {option.label}
+              {range === option.key && (
+                <motion.span
+                  layoutId="dashboard-range-active"
+                  className="absolute inset-0 rounded-lg bg-white shadow-sm"
+                  transition={springSnappy}
+                />
+              )}
+              <span className="relative">{option.label}</span>
             </button>
           ))}
         </div>
@@ -241,7 +252,7 @@ export function AdminDashboardPage() {
               </span>
             </div>
           </div>
-          <div className="mt-4 h-64 w-full">
+          <InViewChart className="mt-4 h-64 w-full">
             {series.length === 0 ? (
               <div className="flex h-full items-center justify-center text-sm text-ink-400">Belum ada data pendapatan.</div>
             ) : (
@@ -270,7 +281,17 @@ export function AdminDashboardPage() {
                     labelStyle={{ fontSize: 12, color: '#0f172a' }}
                     contentStyle={{ borderRadius: 12, borderColor: '#e2e8f0', fontSize: 12 }}
                   />
-                  <Area type="monotone" dataKey="revenue" stroke="#1a6bea" strokeWidth={2.5} fill="url(#revenueFill)" />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#1a6bea"
+                    strokeWidth={2.5}
+                    fill="url(#revenueFill)"
+                    isAnimationActive={!reduceMotion}
+                    animationBegin={80}
+                    animationDuration={1200}
+                    animationEasing="ease-out"
+                  />
                   <Area
                     type="monotone"
                     dataKey="refunds"
@@ -278,11 +299,15 @@ export function AdminDashboardPage() {
                     strokeWidth={2}
                     fill="transparent"
                     strokeDasharray="4 3"
+                    isAnimationActive={!reduceMotion}
+                    animationBegin={220}
+                    animationDuration={1200}
+                    animationEasing="ease-out"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             )}
-          </div>
+          </InViewChart>
         </Card>
 
         <Card className="p-5 sm:p-6">
@@ -294,7 +319,7 @@ export function AdminDashboardPage() {
             <div className="flex h-[240px] items-center justify-center text-sm text-ink-400">Belum ada pesanan.</div>
           ) : (
             <>
-              <div className="relative mx-auto mt-2 h-[190px] w-full">
+              <InViewChart className="relative mx-auto mt-2 h-[190px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -305,6 +330,10 @@ export function AdminDashboardPage() {
                       outerRadius={80}
                       paddingAngle={2}
                       strokeWidth={0}
+                      isAnimationActive={!reduceMotion}
+                      animationBegin={160}
+                      animationDuration={1000}
+                      animationEasing="ease-out"
                     >
                       {statusData.map((entry) => (
                         <Cell key={entry.status} fill={entry.color} />
@@ -320,7 +349,7 @@ export function AdminDashboardPage() {
                   <p className="text-2xl font-extrabold text-ink-950">{data.orders.summary.totalOrders}</p>
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-400">Pesanan</p>
                 </div>
-              </div>
+              </InViewChart>
               <ul className="mt-2 space-y-2">
                 {statusData.slice(0, 6).map((entry) => (
                   <li key={entry.status} className="flex items-center justify-between gap-3 text-xs">
@@ -353,7 +382,7 @@ export function AdminDashboardPage() {
               </span>
             </div>
           </div>
-          <div className="mt-4 h-56">
+          <InViewChart className="mt-4 h-56">
             {orderSeries.length === 0 ? (
               <div className="flex h-full items-center justify-center text-sm text-ink-400">Belum ada data pesanan.</div>
             ) : (
@@ -363,12 +392,30 @@ export function AdminDashboardPage() {
                   <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ borderRadius: 12, borderColor: '#e2e8f0', fontSize: 12 }} />
-                  <Bar dataKey="orders" fill="#2f86f6" radius={[4, 4, 0, 0]} name="Masuk" />
-                  <Bar dataKey="completed" fill="#12a8a7" radius={[4, 4, 0, 0]} name="Selesai" />
+                  <Bar
+                    dataKey="orders"
+                    fill="#2f86f6"
+                    radius={[4, 4, 0, 0]}
+                    name="Masuk"
+                    isAnimationActive={!reduceMotion}
+                    animationBegin={120}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                  />
+                  <Bar
+                    dataKey="completed"
+                    fill="#12a8a7"
+                    radius={[4, 4, 0, 0]}
+                    name="Selesai"
+                    isAnimationActive={!reduceMotion}
+                    animationBegin={240}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                  />
                 </BarChart>
               </ResponsiveContainer>
             )}
-          </div>
+          </InViewChart>
         </Card>
 
         <div className="space-y-5">
@@ -671,7 +718,7 @@ export function AdminDashboardPage() {
                     </div>
                     <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink-100">
                       <div
-                        className={`h-full rounded-full ${ratio >= 90 ? 'bg-rose-400' : ratio >= 60 ? 'bg-amber-400' : 'bg-brand-500'}`}
+                        className={`h-full rounded-full transition-[width] duration-700 ease-out ${ratio >= 90 ? 'bg-rose-400' : ratio >= 60 ? 'bg-amber-400' : 'bg-brand-500'}`}
                         style={{ width: `${ratio}%` }}
                       />
                     </div>

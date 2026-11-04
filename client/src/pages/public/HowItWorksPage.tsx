@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, CalendarCheck, CheckCircle2, Clock, Droplets, MapPin, PackageCheck, ShieldCheck, Truck } from 'lucide-react';
 import { Button, Card } from '../../components/ui';
+import { Reveal } from '../../components/motion/Reveal';
+import { Stagger, StaggerItem } from '../../components/motion/Stagger';
 import { useApi } from '../../lib/useApi';
 import { formatCurrency } from '../../lib/format';
 import type { AppConfig } from '../../lib/types';
@@ -61,34 +63,42 @@ export function HowItWorksPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-      <div className="max-w-3xl">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-700">Panduan</p>
-        <h1 className="mt-2 font-display text-4xl font-semibold text-ink-950 sm:text-5xl">Cara kerja LRCMIS</h1>
-        <p className="mt-4 text-base leading-relaxed text-ink-600">
-          Satu alur dari reservasi sampai cucian kembali ke tangan Anda. Setiap peran memiliki akses dan tanggung
-          jawab yang jelas.
-        </p>
-      </div>
+      <Stagger className="max-w-3xl" amount={0.05} stagger={0.08} delayChildren={0.08}>
+        <StaggerItem distance={12}>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-700">Panduan</p>
+        </StaggerItem>
+        <StaggerItem distance={24} blur duration={0.7}>
+          <h1 className="mt-2 font-display text-4xl font-semibold text-ink-950 sm:text-5xl">Cara kerja LRCMIS</h1>
+        </StaggerItem>
+        <StaggerItem distance={18} blur duration={0.66}>
+          <p className="mt-4 text-base leading-relaxed text-ink-600">
+            Satu alur dari reservasi sampai cucian kembali ke tangan Anda. Setiap peran memiliki akses dan tanggung
+            jawab yang jelas.
+          </p>
+        </StaggerItem>
+      </Stagger>
 
       <div className="mt-10 grid gap-5 lg:grid-cols-[1.4fr_0.6fr]">
-        <div className="space-y-4">
+        <Stagger className="space-y-4">
           {steps.map((step, index) => (
-            <Card key={step.title} className="flex gap-4 p-5 sm:p-6">
-              <div className="flex flex-col items-center">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-900 text-white">
-                  <step.icon className="h-5 w-5" />
+            <StaggerItem key={step.title}>
+              <Card className="flex gap-4 p-5 sm:p-6">
+                <div className="flex flex-col items-center">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-900 text-white">
+                    <step.icon className="h-5 w-5" />
+                  </div>
+                  {index < steps.length - 1 && <div className="mt-2 hidden w-px flex-1 bg-ink-100 sm:block" />}
                 </div>
-                {index < steps.length - 1 && <div className="mt-2 hidden w-px flex-1 bg-ink-100 sm:block" />}
-              </div>
-              <div className="pb-1">
-                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-ink-400">Langkah {index + 1}</p>
-                <h2 className="mt-1 text-base font-bold text-ink-950">{step.title}</h2>
-                <p className="mt-1.5 text-sm leading-relaxed text-ink-500">{step.text}</p>
-              </div>
-            </Card>
+                <div className="pb-1">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-ink-400">Langkah {index + 1}</p>
+                  <h2 className="mt-1 text-base font-bold text-ink-950">{step.title}</h2>
+                  <p className="mt-1.5 text-sm leading-relaxed text-ink-500">{step.text}</p>
+                </div>
+              </Card>
+            </StaggerItem>
           ))}
-        </div>
-        <div className="space-y-4">
+        </Stagger>
+        <Reveal className="space-y-4" delay={0.08}>
           <Card className="bg-brand-950 p-6 text-white">
             <ShieldCheck className="h-7 w-7 text-brand-300" />
             <h2 className="mt-3 font-display text-xl font-semibold">Aturan yang dijaga sistem</h2>
@@ -136,10 +146,10 @@ export function HowItWorksPage() {
             <Clock className="h-4 w-4 shrink-0" />
             Estimasi pengerjaan tiap layanan ditampilkan pada katalog.
           </div>
-        </div>
+        </Reveal>
       </div>
 
-      <div className="mt-14">
+      <Reveal className="mt-14">
         <h2 className="font-display text-3xl font-semibold text-ink-950">Pertanyaan yang sering diajukan</h2>
         <div className="mt-6 divide-y divide-ink-100 overflow-hidden rounded-2xl border border-ink-100 bg-white">
           {faq.map((item) => (
@@ -152,9 +162,9 @@ export function HowItWorksPage() {
             </details>
           ))}
         </div>
-      </div>
+      </Reveal>
 
-      <div className="mt-12 flex flex-col items-start justify-between gap-4 rounded-3xl bg-brand-950 p-7 text-white sm:flex-row sm:items-center">
+      <Reveal className="mt-12 flex flex-col items-start justify-between gap-4 rounded-3xl bg-brand-950 p-7 text-white sm:flex-row sm:items-center">
         <div>
           <p className="font-display text-2xl font-semibold">Mulai dari reservasi pertama.</p>
           <p className="mt-1 text-sm text-brand-100/70">Butuh akun? Pendaftaran gratis dan hanya butuh satu menit.</p>
@@ -164,7 +174,7 @@ export function HowItWorksPage() {
             Daftar sekarang
           </Button>
         </Link>
-      </div>
+      </Reveal>
     </div>
   );
 }

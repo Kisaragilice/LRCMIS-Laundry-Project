@@ -15,6 +15,9 @@ import {
   Wallet,
 } from 'lucide-react';
 import { Button, Card, EmptyState, ErrorState, LoadingState, SectionTitle } from '../../components/ui';
+import { Reveal } from '../../components/motion/Reveal';
+import { Stagger, StaggerItem } from '../../components/motion/Stagger';
+import { AmbientOrb } from '../../components/motion/AmbientOrb';
 import { Stars } from '../../components/common';
 import { useApi } from '../../lib/useApi';
 import { formatCurrency, unitLabel } from '../../lib/format';
@@ -55,71 +58,94 @@ export function HomePage() {
   return (
     <div>
       <section className="relative overflow-hidden border-b border-ink-100 bg-gradient-to-b from-brand-50 via-[#f3f8ff] to-white">
-        <div className="pointer-events-none absolute -left-32 top-10 h-80 w-80 rounded-full bg-brand-200/40 blur-3xl" />
-        <div className="pointer-events-none absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-accent-200/35 blur-3xl" />
+        <AmbientOrb
+          className="absolute -left-32 top-10 h-80 w-80 rounded-full bg-brand-200/40 blur-3xl"
+          duration={20}
+          x={22}
+          y={14}
+        />
+        <AmbientOrb
+          className="absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-accent-200/35 blur-3xl"
+          duration={24}
+          delay={1.5}
+          x={18}
+          y={20}
+        />
         <div className="relative mx-auto max-w-7xl px-4 pb-14 pt-10 sm:px-6 lg:px-8 lg:pb-20 lg:pt-16">
           <div className="grid items-center gap-10 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14">
-            <div className="animate-fade-up">
-              <span className="inline-flex items-center gap-2 rounded-full border border-brand-200/80 bg-white/80 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-700 shadow-sm">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent-500" aria-hidden="true" />
-                Pemesanan online · Pickup & delivery
-              </span>
-              <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight text-ink-950 sm:text-5xl lg:text-[3.6rem]">
-                Laundry rapi,
-                <br />
-                <span className="text-brand-600">tanpa keluar rumah.</span>
-              </h1>
-              <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-600 sm:text-lg">
-                Cuci, setrika, dan antar-jemput dalam satu alur yang terjadwal. Pilih slot, lacak setiap tahap, dan
-                bayar setelah tagihan final ditetapkan.
-              </p>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Link to="/register">
-                  <Button size="lg" icon={<ArrowRight className="h-4 w-4" />}>
-                    Pesan Sekarang
-                  </Button>
-                </Link>
-                <Link to="/layanan">
-                  <Button variant="outline" size="lg">
-                    Cek layanan
-                  </Button>
-                </Link>
-              </div>
-              <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold text-ink-500">
-                <span className="inline-flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-accent-600" aria-hidden="true" /> Tanpa biaya pendaftaran
+            <Stagger amount={0.04} stagger={0.09} delayChildren={0.12}>
+              <StaggerItem distance={14}>
+                <span className="inline-flex items-center gap-2 rounded-full border border-brand-200/80 bg-white/80 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-brand-700 shadow-sm">
+                  <span className="h-1.5 w-1.5 rounded-full bg-accent-500" aria-hidden="true" />
+                  Pemesanan online · Pickup & delivery
                 </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-accent-600" aria-hidden="true" /> Status pesanan transparan
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4 text-accent-600" aria-hidden="true" /> Cash atau transfer
-                </span>
-              </div>
+              </StaggerItem>
+              <StaggerItem distance={28} blur duration={0.74}>
+                <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight text-ink-950 sm:text-5xl lg:text-[3.6rem]">
+                  Laundry rapi,
+                  <br />
+                  <span className="text-brand-600">tanpa keluar rumah.</span>
+                </h1>
+              </StaggerItem>
+              <StaggerItem distance={22} blur duration={0.7}>
+                <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-600 sm:text-lg">
+                  Cuci, setrika, dan antar-jemput dalam satu alur yang terjadwal. Pilih slot, lacak setiap tahap, dan
+                  bayar setelah tagihan final ditetapkan.
+                </p>
+              </StaggerItem>
+              <StaggerItem distance={18}>
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <Link to="/register">
+                    <Button size="lg" icon={<ArrowRight className="h-4 w-4" />}>
+                      Pesan Sekarang
+                    </Button>
+                  </Link>
+                  <Link to="/layanan">
+                    <Button variant="outline" size="lg">
+                      Cek layanan
+                    </Button>
+                  </Link>
+                </div>
+              </StaggerItem>
+              <StaggerItem distance={16}>
+                <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-semibold text-ink-500">
+                  <span className="inline-flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 text-accent-600" aria-hidden="true" /> Tanpa biaya pendaftaran
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 text-accent-600" aria-hidden="true" /> Status pesanan transparan
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 text-accent-600" aria-hidden="true" /> Cash atau transfer
+                  </span>
+                </div>
+              </StaggerItem>
 
-              <dl className="mt-8 grid max-w-lg grid-cols-3 gap-4 border-t border-brand-100 pt-6">
-                <div>
-                  <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-400">Layanan aktif</dt>
-                  <dd className="mt-1 text-xl font-extrabold text-ink-950">
-                    {services.loading ? '—' : serviceList.length}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-400">Minimum kiloan</dt>
-                  <dd className="mt-1 text-xl font-extrabold text-ink-950">
-                    {config.loading ? '—' : `${config.data?.minWeightKg ?? '—'} kg`}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-400">Biaya antar</dt>
-                  <dd className="mt-1 text-xl font-extrabold text-ink-950">
-                    {config.loading ? '—' : formatCurrency(config.data?.defaultDeliveryFee ?? 0)}
-                  </dd>
-                </div>
-              </dl>
-            </div>
+              <StaggerItem distance={18}>
+                <dl className="mt-8 grid max-w-lg grid-cols-3 gap-4 border-t border-brand-100 pt-6">
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-400">Layanan aktif</dt>
+                    <dd className="mt-1 text-xl font-extrabold text-ink-950">
+                      {services.loading ? '—' : serviceList.length}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-400">Minimum kiloan</dt>
+                    <dd className="mt-1 text-xl font-extrabold text-ink-950">
+                      {config.loading ? '—' : `${config.data?.minWeightKg ?? '—'} kg`}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-400">Biaya antar</dt>
+                    <dd className="mt-1 text-xl font-extrabold text-ink-950">
+                      {config.loading ? '—' : formatCurrency(config.data?.defaultDeliveryFee ?? 0)}
+                    </dd>
+                  </div>
+                </dl>
+              </StaggerItem>
+            </Stagger>
 
-            <div className="relative animate-fade-up">
+            <Reveal className="relative" delay={0.1} distance={30} scale={0.97} blur duration={0.8}>
               <div className="rounded-[2rem] border border-brand-100 bg-white/75 p-4 shadow-soft backdrop-blur sm:p-5">
                 <div className="flex items-center justify-between gap-3 px-1 pb-4">
                   <div>
@@ -131,9 +157,9 @@ export function HomePage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <Stagger className="grid grid-cols-2 gap-3">
                   {flow.map((item, index) => (
-                    <div key={item.title} className="relative rounded-2xl border border-ink-100 bg-white p-4 shadow-sm">
+                    <StaggerItem key={item.title} whileHover={{ y: -2 }} className="relative rounded-2xl border border-ink-100 bg-white p-4 shadow-sm transition-[border-color,box-shadow] duration-300 ease-out hover:border-brand-100 hover:shadow-soft">
                       <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-[10px] font-bold text-white">
                         {index + 1}
                       </span>
@@ -148,9 +174,9 @@ export function HomePage() {
                           style={{ width: `${45 + index * 15}%` }}
                         />
                       </div>
-                    </div>
+                    </StaggerItem>
                   ))}
-                </div>
+                </Stagger>
 
                 <div className="mt-4 flex items-center gap-3 rounded-2xl bg-brand-950 px-4 py-3.5 text-white">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10">
@@ -162,15 +188,15 @@ export function HomePage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
 
       <section className="border-b border-ink-100 bg-white">
-        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-9 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+        <Stagger className="mx-auto grid max-w-7xl gap-6 px-4 py-9 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
           {values.map((value) => (
-            <div key={value.title} className="flex gap-3">
+            <StaggerItem key={value.title} className="flex gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
                 <value.icon className="h-[18px] w-[18px]" aria-hidden="true" />
               </div>
@@ -178,21 +204,23 @@ export function HomePage() {
                 <p className="text-sm font-bold text-ink-900">{value.title}</p>
                 <p className="mt-1 text-xs leading-relaxed text-ink-500">{value.text}</p>
               </div>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-        <SectionTitle
-          title="Layanan yang siap menemani rutinitas"
-          description="Harga jelas per satuan. Untuk layanan kiloan, tagihan mengikuti berat aktual saat cucian diterima."
-          action={
-            <Link to="/layanan" className="inline-flex items-center gap-1 text-sm font-bold text-brand-700 hover:text-brand-900">
-              Semua layanan <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-          }
-        />
+        <Reveal>
+          <SectionTitle
+            title="Layanan yang siap menemani rutinitas"
+            description="Harga jelas per satuan. Untuk layanan kiloan, tagihan mengikuti berat aktual saat cucian diterima."
+            action={
+              <Link to="/layanan" className="inline-flex items-center gap-1 text-sm font-bold text-brand-700 hover:text-brand-900">
+                Semua layanan <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            }
+          />
+        </Reveal>
         {services.loading ? (
           <div className="mt-8">
             <LoadingState label="Memuat layanan..." />
@@ -206,11 +234,12 @@ export function HomePage() {
             <EmptyState title="Belum ada layanan aktif" description="Silakan hubungi admin untuk informasi layanan." />
           </div>
         ) : (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Stagger className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {serviceList.slice(0, 6).map((service) => (
-              <Card key={service.id} className="group flex flex-col p-5 transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-soft">
+              <StaggerItem key={service.id} className="h-full">
+                <Card className="group flex h-full flex-col p-5 transition duration-300 ease-out hover:-translate-y-1 hover:border-brand-200 hover:shadow-soft">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700 transition-transform duration-300 group-hover:scale-105">
                     <Droplets className="h-5 w-5" aria-hidden="true" />
                   </div>
                   <span className="rounded-full bg-sand-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-500">
@@ -232,30 +261,33 @@ export function HomePage() {
                     </span>
                   ) : null}
                 </div>
-              </Card>
+                </Card>
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         )}
       </section>
 
       <section className="border-y border-ink-100 bg-sand-50 py-16 lg:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionTitle
-            title="Empat langkah, cucian beres"
-            description="Alur yang sama digunakan pelanggan dan tim operasional, sehingga tidak ada informasi yang terputus."
-          />
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Reveal>
+            <SectionTitle
+              title="Empat langkah, cucian beres"
+              description="Alur yang sama digunakan pelanggan dan tim operasional, sehingga tidak ada informasi yang terputus."
+            />
+          </Reveal>
+          <Stagger className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((step, index) => (
-              <div key={step.title} className="relative rounded-2xl border border-ink-100 bg-white p-5 shadow-card">
+              <StaggerItem key={step.title} whileHover={{ y: -4 }} className="relative rounded-2xl border border-ink-100 bg-white p-5 shadow-card transition-[border-color,box-shadow] duration-300 ease-out hover:shadow-soft">
                 <span className="absolute right-4 top-4 text-3xl font-extrabold text-ink-100">0{index + 1}</span>
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600 text-white">
                   <step.icon className="h-5 w-5" aria-hidden="true" />
                 </div>
                 <h3 className="mt-4 text-base font-bold text-ink-950">{step.title}</h3>
                 <p className="mt-1 text-sm leading-relaxed text-ink-500">{step.text}</p>
-              </div>
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to="/cara-kerja">
               <Button variant="outline">Pelajari alurnya</Button>
@@ -269,7 +301,7 @@ export function HomePage() {
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
         <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-          <div>
+          <Reveal>
             <span className="eyebrow">Kata pelanggan</span>
             <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-ink-950 sm:text-4xl">
               Dipercaya untuk cucian yang sibuk
@@ -292,37 +324,41 @@ export function HomePage() {
                 </p>
               </div>
             </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          </Reveal>
+          <Stagger className="grid gap-4 sm:grid-cols-2">
             {reviews.loading ? (
               <div className="sm:col-span-2">
                 <LoadingState label="Memuat ulasan..." />
               </div>
             ) : reviewList.length === 0 ? (
-              <Card className="p-6 sm:col-span-2">
-                <p className="text-sm font-semibold text-ink-800">Belum ada ulasan yang ditampilkan.</p>
-                <p className="mt-1 text-sm leading-relaxed text-ink-500">
-                  Ulasan akan muncul di sini setelah pelanggan menyelesaikan pesanan. Jadilah yang pertama berbagi
-                  pengalaman setelah laundry Anda selesai.
-                </p>
-              </Card>
+              <StaggerItem className="sm:col-span-2">
+                <Card className="p-6">
+                  <p className="text-sm font-semibold text-ink-800">Belum ada ulasan yang ditampilkan.</p>
+                  <p className="mt-1 text-sm leading-relaxed text-ink-500">
+                    Ulasan akan muncul di sini setelah pelanggan menyelesaikan pesanan. Jadilah yang pertama berbagi
+                    pengalaman setelah laundry Anda selesai.
+                  </p>
+                </Card>
+              </StaggerItem>
             ) : (
               reviewList.slice(0, 4).map((review) => (
-                <Card key={review.id} className="p-5">
-                  <Stars value={review.rating} size="sm" />
-                  <p className="mt-3 text-sm leading-relaxed text-ink-700">“{review.comment}”</p>
-                  <p className="mt-4 text-xs font-bold text-ink-900">{review.customerName}</p>
-                  <p className="text-[11px] text-ink-400">{review.service}</p>
-                </Card>
+                <StaggerItem key={review.id} className="h-full">
+                  <Card className="h-full p-5">
+                    <Stars value={review.rating} size="sm" />
+                    <p className="mt-3 text-sm leading-relaxed text-ink-700">“{review.comment}”</p>
+                    <p className="mt-4 text-xs font-bold text-ink-900">{review.customerName}</p>
+                    <p className="text-[11px] text-ink-400">{review.service}</p>
+                  </Card>
+                </StaggerItem>
               ))
             )}
-          </div>
+          </Stagger>
         </div>
       </section>
 
       <section className="bg-white py-16 lg:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <Reveal className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="relative overflow-hidden rounded-[2rem] border border-brand-100 bg-brand-50/60 p-6 sm:p-8">
               <div className="absolute inset-0 bg-soft-grid bg-grid opacity-60" aria-hidden="true" />
               <div className="relative">
@@ -409,7 +445,7 @@ export function HomePage() {
                 </div>
               </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
     </div>

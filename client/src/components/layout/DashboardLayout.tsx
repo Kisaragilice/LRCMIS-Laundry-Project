@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
 import {
   BarChart3,
   Bell,
@@ -32,6 +33,8 @@ import {
 } from 'lucide-react';
 import { Avatar, Badge, cn } from '../ui';
 import { Brand } from '../common';
+import { PageTransition } from '../motion/PageTransition';
+import { springSnappy, springSoft } from '../../lib/motion';
 import { useAuth } from '../../lib/auth';
 import { api } from '../../lib/api';
 import { formatDateTime } from '../../lib/format';
@@ -239,17 +242,37 @@ export function DashboardLayout() {
     <div className="min-h-screen bg-sand-50">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[264px] lg:block">{sidebar}</aside>
 
-      {drawer && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button
-            type="button"
-            className="absolute inset-0 bg-ink-950/55 backdrop-blur-sm"
-            aria-label="Tutup menu"
-            onClick={() => setDrawer(false)}
-          />
-          <aside className="relative h-full w-[286px] shadow-2xl animate-fade-in">{sidebar}</aside>
-        </div>
-      )}
+      <AnimatePresence>
+        {drawer && (
+          <motion.div
+            key="dashboard-drawer"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="fixed inset-0 z-50 lg:hidden"
+          >
+            <motion.button
+              type="button"
+              className="absolute inset-0 bg-ink-950/55 backdrop-blur-sm"
+              aria-label="Tutup menu"
+              onClick={() => setDrawer(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+            <motion.aside
+              initial={{ x: -28, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -28, opacity: 0 }}
+              transition={springSoft}
+              className="relative h-full w-[286px] shadow-2xl"
+            >
+              {sidebar}
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className="lg:pl-[264px]">
         <header className="sticky top-0 z-30 flex h-[68px] items-center gap-3 border-b border-ink-100 bg-white/85 px-4 backdrop-blur-xl sm:px-6">
@@ -285,34 +308,42 @@ export function DashboardLayout() {
                   </span>
                 )}
               </button>
-              {bell && (
-                <div className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft animate-fade-in">
-                  <div className="flex items-center justify-between border-b border-ink-100 px-4 py-3">
-                    <p className="text-sm font-bold text-ink-900">Notifikasi</p>
-                    <Badge tone={unread ? 'amber' : 'slate'}>{unread} baru</Badge>
-                  </div>
-                  <div className="max-h-80 divide-y divide-ink-50 overflow-y-auto">
-                    {notifications.length === 0 ? (
-                      <p className="px-4 py-8 text-center text-sm text-ink-400">Belum ada notifikasi.</p>
-                    ) : (
-                      notifications.map((item) => (
-                        <div key={item.id} className="px-4 py-3">
-                          <p className="text-sm font-semibold text-ink-900">{item.title}</p>
-                          <p className="mt-0.5 line-clamp-2 text-xs text-ink-500">{item.message}</p>
-                          <p className="mt-1 text-[10px] text-ink-400">{formatDateTime(item.createdAt)}</p>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                  <Link
-                    to="/notifikasi"
-                    onClick={() => setBell(false)}
-                    className="block border-t border-ink-100 px-4 py-3 text-center text-xs font-bold text-brand-700 hover:bg-brand-50"
+              <AnimatePresence>
+                {bell && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                    transition={springSnappy}
+                    className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-2rem))] origin-top-right overflow-hidden rounded-2xl border border-ink-100 bg-white shadow-soft"
                   >
-                    Lihat semua notifikasi
-                  </Link>
-                </div>
-              )}
+                    <div className="flex items-center justify-between border-b border-ink-100 px-4 py-3">
+                      <p className="text-sm font-bold text-ink-900">Notifikasi</p>
+                      <Badge tone={unread ? 'amber' : 'slate'}>{unread} baru</Badge>
+                    </div>
+                    <div className="max-h-80 divide-y divide-ink-50 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <p className="px-4 py-8 text-center text-sm text-ink-400">Belum ada notifikasi.</p>
+                      ) : (
+                        notifications.map((item) => (
+                          <div key={item.id} className="px-4 py-3">
+                            <p className="text-sm font-semibold text-ink-900">{item.title}</p>
+                            <p className="mt-0.5 line-clamp-2 text-xs text-ink-500">{item.message}</p>
+                            <p className="mt-1 text-[10px] text-ink-400">{formatDateTime(item.createdAt)}</p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <Link
+                      to="/notifikasi"
+                      onClick={() => setBell(false)}
+                      className="block border-t border-ink-100 px-4 py-3 text-center text-xs font-bold text-brand-700 hover:bg-brand-50"
+                    >
+                      Lihat semua notifikasi
+                    </Link>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             <div className="relative" ref={menuRef}>
               <button
@@ -325,39 +356,49 @@ export function DashboardLayout() {
                 <span className="hidden max-w-[120px] truncate text-xs font-semibold text-ink-800 sm:block">{user.name}</span>
                 <ChevronDown className="hidden h-3.5 w-3.5 text-ink-400 sm:block" aria-hidden="true" />
               </button>
-              {menu && (
-                <div className="absolute right-0 mt-2 w-60 overflow-hidden rounded-2xl border border-ink-100 bg-white p-1.5 shadow-soft animate-fade-in">
-                  <div className="px-3 py-2">
-                    <p className="truncate text-sm font-semibold text-ink-900">{user.name}</p>
-                    <p className="truncate text-xs text-ink-400">{user.email}</p>
-                    <p className="mt-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-600">{roleLabel(user.roles)}</p>
-                  </div>
-                  {(user.roles.includes('customer') || user.roles.includes('admin')) && (
-                    <Link to="/profil" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink-600 hover:bg-ink-50">
-                      <User className="h-4 w-4" /> Profil saya
-                    </Link>
-                  )}
-                  <Link to="/" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink-600 hover:bg-ink-50">
-                    <Receipt className="h-4 w-4" /> Situs publik
-                  </Link>
-                  <Link to="/ubah-password" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink-600 hover:bg-ink-50">
-                    <LockKeyhole className="h-4 w-4" /> Ubah password
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+              <AnimatePresence>
+                {menu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                    transition={springSnappy}
+                    className="absolute right-0 mt-2 w-60 origin-top-right overflow-hidden rounded-2xl border border-ink-100 bg-white p-1.5 shadow-soft"
                   >
-                    <LogOut className="h-4 w-4" /> Keluar
-                  </button>
-                </div>
-              )}
+                    <div className="px-3 py-2">
+                      <p className="truncate text-sm font-semibold text-ink-900">{user.name}</p>
+                      <p className="truncate text-xs text-ink-400">{user.email}</p>
+                      <p className="mt-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-600">{roleLabel(user.roles)}</p>
+                    </div>
+                    {(user.roles.includes('customer') || user.roles.includes('admin')) && (
+                      <Link to="/profil" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink-600 hover:bg-ink-50">
+                        <User className="h-4 w-4" /> Profil saya
+                      </Link>
+                    )}
+                    <Link to="/" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink-600 hover:bg-ink-50">
+                      <Receipt className="h-4 w-4" /> Situs publik
+                    </Link>
+                    <Link to="/ubah-password" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink-600 hover:bg-ink-50">
+                      <LockKeyhole className="h-4 w-4" /> Ubah password
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="h-4 w-4" /> Keluar
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </header>
 
         <main className="mx-auto max-w-[1440px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-          <Outlet />
+          <PageTransition>
+            <Outlet />
+          </PageTransition>
         </main>
       </div>
     </div>

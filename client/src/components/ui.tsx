@@ -8,8 +8,10 @@ import {
   type TextareaHTMLAttributes,
 } from 'react';
 import { Link } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
 import { AlertTriangle, Check, ChevronLeft, ChevronRight, Inbox, Loader2, X } from 'lucide-react';
 import { badgeToneForStatus } from '../lib/format';
+import { durations, smoothEase, springSnappy, springSoft } from '../lib/motion';
 
 export function cn(...values: Array<string | false | null | undefined>): string {
   return values.filter(Boolean).join(' ');
@@ -38,7 +40,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60',
         variant === 'primary' && 'bg-brand-600 text-white shadow-sm shadow-brand-600/20 hover:bg-brand-700 active:bg-brand-800',
         variant === 'secondary' && 'bg-sand-100 text-ink-800 hover:bg-sand-200',
         variant === 'outline' && 'border border-ink-200 bg-white text-ink-800 hover:border-brand-300 hover:bg-brand-50/60 hover:text-brand-800',
@@ -107,14 +109,19 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.55, ease: smoothEase }}
+      className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end"
+    >
       <div>
         {eyebrow && <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-brand-700">{eyebrow}</p>}
         <h1 className="text-2xl font-extrabold tracking-tight text-ink-950 sm:text-3xl">{title}</h1>
         {description && <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-500">{description}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-    </div>
+    </motion.div>
   );
 }
 
@@ -175,9 +182,13 @@ export function StatCard({
 }) {
   const dark = tone === 'dark';
   const content = (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -2, transition: { duration: 0.24, ease: smoothEase } }}
+      transition={{ duration: durations.reveal, ease: smoothEase }}
       className={cn(
-        'relative flex h-full items-start justify-between gap-3 overflow-hidden rounded-2xl border p-5 shadow-card transition',
+        'relative flex h-full items-start justify-between gap-3 overflow-hidden rounded-2xl border p-5 shadow-card transition-[border-color,box-shadow] duration-300 ease-out',
         dark
           ? 'border-brand-800 bg-gradient-to-br from-brand-700 via-brand-800 to-brand-950 text-white'
           : 'border-ink-100 bg-white hover:border-brand-200 hover:shadow-soft',
@@ -213,7 +224,7 @@ export function StatCard({
           →
         </span>
       )}
-    </div>
+    </motion.div>
   );
 
   return to ? (
@@ -304,40 +315,53 @@ export function Modal({
     };
   }, [open, onClose]);
 
-  if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-ink-950/45 p-0 backdrop-blur-sm sm:items-center sm:p-6">
-      <button type="button" className="absolute inset-0 cursor-default" aria-label="Tutup dialog" onClick={onClose} />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className={cn(
-          'relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl',
-          size === 'sm' && 'sm:max-w-md',
-          size === 'md' && 'sm:max-w-2xl',
-          size === 'lg' && 'sm:max-w-4xl',
-        )}
-      >
-        <div className="mb-5 flex items-start justify-between gap-4">
-          <div>
-            <h2 id={titleId} className="text-xl font-bold text-ink-950">
-              {title}
-            </h2>
-            {description && <p className="mt-1 text-sm text-ink-500">{description}</p>}
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Tutup"
-            className="rounded-lg p-2 text-ink-400 transition hover:bg-ink-100 hover:text-ink-700"
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+          className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-ink-950/45 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+        >
+          <button type="button" className="absolute inset-0 cursor-default" aria-label="Tutup dialog" onClick={onClose} />
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            initial={{ opacity: 0, y: 28, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.98 }}
+            transition={springSoft}
+            className={cn(
+              'relative z-10 max-h-[92vh] w-full overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl',
+              size === 'sm' && 'sm:max-w-md',
+              size === 'md' && 'sm:max-w-2xl',
+              size === 'lg' && 'sm:max-w-4xl',
+            )}
           >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <h2 id={titleId} className="text-xl font-bold text-ink-950">
+                  {title}
+                </h2>
+                {description && <p className="mt-1 text-sm text-ink-500">{description}</p>}
+              </div>
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Tutup"
+                className="rounded-lg p-2 text-ink-400 transition hover:bg-ink-100 hover:text-ink-700"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            {children}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -453,6 +477,7 @@ export function Tabs<T extends string>({
   value: T;
   onChange: (value: T) => void;
 }) {
+  const indicatorId = useId();
   return (
     <div className="flex gap-1 overflow-x-auto rounded-xl bg-ink-100 p-1" role="tablist">
       {tabs.map((tab) => (
@@ -463,11 +488,18 @@ export function Tabs<T extends string>({
           aria-selected={value === tab.value}
           onClick={() => onChange(tab.value)}
           className={cn(
-            'whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-semibold transition',
-            value === tab.value ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-800',
+            'relative whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-semibold transition',
+            value === tab.value ? 'text-ink-900' : 'text-ink-500 hover:text-ink-800',
           )}
         >
-          {tab.label}
+          {value === tab.value && (
+            <motion.span
+              layoutId={`tab-indicator-${indicatorId}`}
+              className="absolute inset-0 rounded-lg bg-white shadow-sm"
+              transition={springSnappy}
+            />
+          )}
+          <span className="relative">{tab.label}</span>
         </button>
       ))}
     </div>

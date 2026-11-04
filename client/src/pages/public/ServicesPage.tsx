@@ -2,6 +2,9 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock, Droplets, Info, Search, Sparkles } from 'lucide-react';
 import { Button, Card, EmptyState, ErrorState, Input, LoadingState } from '../../components/ui';
+import { Reveal } from '../../components/motion/Reveal';
+import { Stagger, StaggerItem } from '../../components/motion/Stagger';
+import { AmbientOrb } from '../../components/motion/AmbientOrb';
 import { useApi } from '../../lib/useApi';
 import { formatCurrency, unitLabel } from '../../lib/format';
 import type { AppConfig, Service } from '../../lib/types';
@@ -23,21 +26,32 @@ export function ServicesPage() {
   return (
     <div>
       <section className="relative overflow-hidden border-b border-ink-100 bg-gradient-to-b from-brand-50 to-white">
-        <div className="pointer-events-none absolute -right-24 top-0 h-72 w-72 rounded-full bg-accent-200/30 blur-3xl" aria-hidden="true" />
+        <AmbientOrb
+          className="absolute -right-24 top-0 h-72 w-72 rounded-full bg-accent-200/30 blur-3xl"
+          duration={22}
+          x={16}
+          y={18}
+        />
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-          <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/80 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-brand-700">
-              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Katalog layanan
-            </span>
-            <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-ink-950 sm:text-4xl lg:text-5xl">Layanan</h1>
-            <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-600">
-              Untuk layanan berbasis berat, tagihan dihitung dari berat aktual saat cucian
-              diterima dengan pembulatan {config.data?.weightRoundingKg ?? 0.5} kg.
-            </p>
-          </div>
+          <Stagger className="max-w-3xl" amount={0.05} stagger={0.08} delayChildren={0.1}>
+            <StaggerItem distance={14}>
+              <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/80 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-brand-700">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Katalog layanan
+              </span>
+            </StaggerItem>
+            <StaggerItem distance={24} blur duration={0.7}>
+              <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-ink-950 sm:text-4xl lg:text-5xl">Layanan</h1>
+            </StaggerItem>
+            <StaggerItem distance={18} blur duration={0.66}>
+              <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-600">
+                Untuk layanan berbasis berat, tagihan dihitung dari berat aktual saat cucian
+                diterima dengan pembulatan {config.data?.weightRoundingKg ?? 0.5} kg.
+              </p>
+            </StaggerItem>
+          </Stagger>
 
           {config.data && (
-            <div className="mt-7 flex flex-wrap gap-2">
+            <Reveal className="mt-7 flex flex-wrap gap-2" delay={0.04} distance={14}>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold text-ink-700 shadow-sm ring-1 ring-ink-100">
                 <Info className="h-3.5 w-3.5 text-brand-600" aria-hidden="true" /> Minimum {config.data.minWeightKg} kg untuk layanan kiloan
               </span>
@@ -47,13 +61,13 @@ export function ServicesPage() {
               <span className="rounded-full bg-white/80 px-3 py-1.5 text-xs font-semibold text-ink-700 shadow-sm ring-1 ring-ink-100">
                 Pembatalan hingga {config.data.reservationCancelCutoffHours} jam sebelum jadwal
               </span>
-            </div>
+            </Reveal>
           )}
         </div>
       </section>
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
-        <div className="flex flex-col gap-3 rounded-2xl border border-ink-100 bg-white p-4 shadow-card lg:flex-row lg:items-center">
+        <Reveal className="flex flex-col gap-3 rounded-2xl border border-ink-100 bg-white p-4 shadow-card lg:flex-row lg:items-center">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
             <Input
@@ -86,7 +100,7 @@ export function ServicesPage() {
               </button>
             ))}
           </div>
-        </div>
+        </Reveal>
 
         <div className="mt-8">
           {services.loading ? (
@@ -96,11 +110,12 @@ export function ServicesPage() {
           ) : filtered.length === 0 ? (
             <EmptyState title="Layanan tidak ditemukan" description="Coba kata kunci atau satuan lain." />
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((service) => (
-                <Card key={service.id} className="group flex flex-col p-6 transition hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-soft">
+                <StaggerItem key={service.id} className="h-full">
+                  <Card className="group flex h-full flex-col p-6 transition duration-300 ease-out hover:-translate-y-1 hover:border-brand-200 hover:shadow-soft">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 transition-transform duration-300 group-hover:scale-105">
                       <Droplets className="h-6 w-6" aria-hidden="true" />
                     </div>
                     <span className="rounded-full bg-sand-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-500">
@@ -126,12 +141,13 @@ export function ServicesPage() {
                     ) : null}
                   </div>
                 </Card>
+              </StaggerItem>
               ))}
-            </div>
+            </Stagger>
           )}
         </div>
 
-        <div className="mt-12 flex flex-col items-start justify-between gap-4 rounded-[1.75rem] border border-brand-100 bg-brand-50/50 p-6 sm:flex-row sm:items-center sm:p-8">
+        <Reveal className="mt-12 flex flex-col items-start justify-between gap-4 rounded-[1.75rem] border border-brand-100 bg-brand-50/50 p-6 sm:flex-row sm:items-center sm:p-8">
           <div>
             <p className="text-xl font-extrabold text-ink-950">Siap memesan layanan?</p>
             <p className="mt-1 text-sm text-ink-500">Masuk atau daftar untuk memilih slot dan membuat reservasi.</p>
@@ -144,7 +160,7 @@ export function ServicesPage() {
               <Button icon={<ArrowRight className="h-4 w-4" />}>Daftar</Button>
             </Link>
           </div>
-        </div>
+        </Reveal>
       </div>
     </div>
   );

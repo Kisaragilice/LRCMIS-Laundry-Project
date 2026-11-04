@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
 import { Brand } from '../../components/common';
+import { Reveal } from '../../components/motion/Reveal';
+import { AmbientOrb } from '../../components/motion/AmbientOrb';
 
 export function AuthShell({
   title,
@@ -16,11 +18,22 @@ export function AuthShell({
 }) {
   return (
     <div className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:min-h-[calc(100vh-68px)] lg:grid-cols-[1fr_0.95fr] lg:items-center lg:px-8">
-      <div className="hidden lg:block">
+      <Reveal className="hidden lg:block" distance={30} scale={0.97} blur duration={0.8}>
         <div className="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-brand-700 via-brand-800 to-brand-950 p-10 text-white shadow-soft">
           <div className="pointer-events-none absolute inset-0 bg-soft-grid bg-grid opacity-[0.12]" aria-hidden="true" />
-          <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-accent-400/20 blur-3xl" />
-          <div className="absolute -bottom-20 left-10 h-56 w-56 rounded-full bg-brand-400/20 blur-3xl" />
+          <AmbientOrb
+            className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-accent-400/20 blur-3xl"
+            duration={19}
+            x={16}
+            y={14}
+          />
+          <AmbientOrb
+            className="absolute -bottom-20 left-10 h-56 w-56 rounded-full bg-brand-400/20 blur-3xl"
+            duration={23}
+            delay={1.2}
+            x={20}
+            y={12}
+          />
           <div className="relative">
             <Brand inverted />
             <h2 className="mt-10 text-4xl font-extrabold leading-tight tracking-tight">
@@ -51,8 +64,8 @@ export function AuthShell({
             </div>
           </div>
         </div>
-      </div>
-      <div className="mx-auto w-full max-w-md">
+      </Reveal>
+      <Reveal className="mx-auto w-full max-w-md" delay={0.12} distance={22}>
         <h1 className="text-3xl font-extrabold tracking-tight text-ink-950">{title}</h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-500">{description}</p>
         <div className="mt-6">{children}</div>
@@ -62,7 +75,7 @@ export function AuthShell({
             ← Kembali ke beranda
           </Link>
         </p>
-      </div>
+      </Reveal>
     </div>
   );
 }

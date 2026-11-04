@@ -4,7 +4,7 @@ Aplikasi full-stack untuk kebutuhan akademik LRCMIS: reservasi pelanggan dengan 
 yang aman terhadap request bersamaan, alur operasional dari penimbangan sampai pengantaran,
 pembayaran yang dapat diaudit, promosi, laporan, chat, dan dashboard berbasis role.
 
-- **Frontend:** React 19, Vite 6, TypeScript, Tailwind CSS, React Router, Zod, Recharts, Lucide
+- **Frontend:** React 19, Vite 6, TypeScript, Tailwind CSS, React Router, Motion, Zod, Recharts, Lucide
 - **Backend:** Node.js, Express 4, TypeScript, Prisma 6, PostgreSQL 17, Zod, Vitest + Supertest
 - **Auth:** cookie JWT HttpOnly, CSRF double-submit, hash bcrypt, RBAC + ownership check
 - **Email:** Resend untuk email reset password

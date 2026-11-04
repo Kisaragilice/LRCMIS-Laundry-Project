@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useReducedMotion } from 'motion/react';
 import {
   Bar,
   BarChart,
@@ -28,6 +29,7 @@ import { api } from '../../lib/api';
 import { useToast } from '../../lib/toast';
 import { formatCurrency, formatDate, formatNumber, monthStartIso, todayIso } from '../../lib/format';
 import type { ReportRevenue } from '../../lib/types';
+import { InViewChart } from '../../components/motion/InViewChart';
 
 interface Period {
   from: string;
@@ -85,6 +87,7 @@ interface OperationsReport {
 
 export function AdminReportsPage() {
   const { toast } = useToast();
+  const reduceMotion = useReducedMotion();
   const [from, setFrom] = useState(monthStartIso());
   const [to, setTo] = useState(todayIso());
   const [groupBy, setGroupBy] = useState<'day' | 'month'>('day');
@@ -191,7 +194,7 @@ export function AdminReportsPage() {
             {(revenueData?.series ?? []).length === 0 ? (
               <p className="py-10 text-center text-sm text-ink-400">Belum ada transaksi pada periode ini.</p>
             ) : (
-              <div className="h-72 w-full">
+              <InViewChart className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={revenueData?.series ?? []} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e7e2d8" vertical={false} />
@@ -199,11 +202,29 @@ export function AdminReportsPage() {
                     <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} tickFormatter={(value: number) => `${Math.round(value / 1000)}k`} />
                     <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={{ borderRadius: 12, borderColor: '#e7e2d8', fontSize: 12 }} />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
-                    <Bar dataKey="revenue" name="Pendapatan" fill="#245c4f" radius={[6, 6, 0, 0]} />
-                    <Bar dataKey="refunds" name="Refund" fill="#f2b8b5" radius={[6, 6, 0, 0]} />
+                    <Bar
+                      dataKey="revenue"
+                      name="Pendapatan"
+                      fill="#245c4f"
+                      radius={[6, 6, 0, 0]}
+                      isAnimationActive={!reduceMotion}
+                      animationBegin={100}
+                      animationDuration={1100}
+                      animationEasing="ease-out"
+                    />
+                    <Bar
+                      dataKey="refunds"
+                      name="Refund"
+                      fill="#f2b8b5"
+                      radius={[6, 6, 0, 0]}
+                      isAnimationActive={!reduceMotion}
+                      animationBegin={220}
+                      animationDuration={1100}
+                      animationEasing="ease-out"
+                    />
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
+              </InViewChart>
             )}
           </Card>
 

@@ -1,20 +1,28 @@
 import { Clock, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import { Card } from '../../components/ui';
+import { Reveal } from '../../components/motion/Reveal';
+import { Stagger, StaggerItem } from '../../components/motion/Stagger';
 
 export function ContactPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-      <div className="max-w-3xl">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-700">Hubungi kami</p>
-        <h1 className="mt-2 font-display text-4xl font-semibold text-ink-950 sm:text-5xl">Kami siap membantu</h1>
-        <p className="mt-4 text-base leading-relaxed text-ink-600">
-          Punya pertanyaan tentang pesanan, jadwal, atau kerja sama? Hubungi tim operasional LRCMIS melalui kanal di
-          bawah ini.
-        </p>
-      </div>
+      <Stagger className="max-w-3xl" amount={0.05} stagger={0.08} delayChildren={0.08}>
+        <StaggerItem distance={12}>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-700">Hubungi kami</p>
+        </StaggerItem>
+        <StaggerItem distance={24} blur duration={0.7}>
+          <h1 className="mt-2 font-display text-4xl font-semibold text-ink-950 sm:text-5xl">Kami siap membantu</h1>
+        </StaggerItem>
+        <StaggerItem distance={18} blur duration={0.66}>
+          <p className="mt-4 text-base leading-relaxed text-ink-600">
+            Punya pertanyaan tentang pesanan, jadwal, atau kerja sama? Hubungi tim operasional LRCMIS melalui kanal di
+            bawah ini.
+          </p>
+        </StaggerItem>
+      </Stagger>
 
       <div className="mt-10 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="grid gap-4 sm:grid-cols-2">
+        <Stagger className="grid gap-4 sm:grid-cols-2">
           {[
             {
               icon: MapPin,
@@ -37,20 +45,23 @@ export function ContactPage() {
               lines: ['Setiap hari 07.00–21.00 WIB', 'Slot terakhir 19.00 WIB'],
             },
           ].map((item) => (
-            <Card key={item.title} className="p-5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
-                <item.icon className="h-5 w-5" />
-              </div>
-              <p className="mt-4 text-sm font-bold text-ink-900">{item.title}</p>
-              {item.lines.map((line) => (
-                <p key={line} className="mt-1 text-sm text-ink-500">
-                  {line}
-                </p>
-              ))}
-            </Card>
+            <StaggerItem key={item.title} className="h-full">
+              <Card className="h-full p-5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <p className="mt-4 text-sm font-bold text-ink-900">{item.title}</p>
+                {item.lines.map((line) => (
+                  <p key={line} className="mt-1 text-sm text-ink-500">
+                    {line}
+                  </p>
+                ))}
+              </Card>
+            </StaggerItem>
           ))}
-          <Card className="p-5 sm:col-span-2">
-            <div className="flex items-start gap-3">
+          <StaggerItem className="sm:col-span-2">
+            <Card className="p-5">
+              <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
                 <MessageCircle className="h-5 w-5" />
               </div>
@@ -68,10 +79,12 @@ export function ContactPage() {
                 </a>
               </div>
             </div>
-          </Card>
-        </div>
+            </Card>
+          </StaggerItem>
+        </Stagger>
 
-        <Card className="overflow-hidden p-0">
+        <Reveal className="h-full" delay={0.1} distance={24} scale={0.985}>
+          <Card className="flex h-full flex-col overflow-hidden p-0">
           <div className="bg-brand-950 px-6 py-6 text-white">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-300">Lokasi outlet</p>
             <h2 className="mt-1 font-display text-2xl font-semibold">Bandar Lampung</h2>
@@ -79,7 +92,7 @@ export function ContactPage() {
               Parkir tersedia. Silakan datang sesuai slot reservasi agar tidak menunggu.
             </p>
           </div>
-          <div className="relative h-72 bg-contact-panel bg-panel p-6">
+          <div className="relative min-h-72 flex-1 bg-contact-panel bg-panel p-6">
             <div className="relative flex h-full flex-col items-center justify-center text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-900 text-white shadow-soft">
                 <MapPin className="h-7 w-7" />
@@ -99,6 +112,7 @@ export function ContactPage() {
             </div>
           </div>
         </Card>
+        </Reveal>
       </div>
     </div>
   );
