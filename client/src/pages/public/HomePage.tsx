@@ -31,10 +31,10 @@ const flow = [
 ];
 
 const values = [
-  { icon: Clock, title: 'Jadwal yang pasti', text: 'Kapasitas slot dicek ulang oleh sistem, menjamin jadwal yang di pilih benar-benar tersedia.' },
-  { icon: Wallet, title: 'Harga transparan', text: 'Rincian layanan, diskon, dan biaya antar terlihat sebelum pembayaran dicatat.' },
+  { icon: Clock, title: 'Jadwal yang pasti', text: 'Kapasitas dicek ulang oleh sistem, menjamin jadwal yang di pilih benar-benar tersedia.' },
+  { icon: Wallet, title: 'Harga transparan', text: 'Layanan, diskon, dan biaya antar akan terlihat sebelum pembayaran dicatat.' },
   { icon: MapPin, title: 'Antar-jemput', text: 'Pilih drop-off atau pickup. Alamat tersimpan pada pemesanan akun dan tugas kurir.' },
-  { icon: ShieldCheck, title: 'Status terlacak', text: 'Setiap perubahan status produksi tercatat pada timeline pesanan Anda.' },
+  { icon: ShieldCheck, title: 'Status pesanan', text: 'Setiap perubahan status produksi tercatat pada timeline pesanan Anda.' },
 ];
 
 const steps = [
@@ -89,8 +89,8 @@ export function HomePage() {
               </StaggerItem>
               <StaggerItem distance={22} blur duration={0.7}>
                 <p className="mt-5 max-w-xl text-base leading-relaxed text-ink-600 sm:text-lg">
-                  Cuci, setrika, dan antar-jemput dalam satu alur yang terjadwal. Pilih slot, lacak setiap tahap, dan
-                  bayar setelah tagihan final ditetapkan.
+                  Cuci, setrika, dan antar-jemput dalam satu alur yang terjadwal. Pilih jadwal, lacak, dan
+                  bayar setelah tagihan ditetapkan.
                 </p>
               </StaggerItem>
               <StaggerItem distance={18}>
@@ -272,7 +272,7 @@ export function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Reveal>
             <SectionTitle
-              title="Empat langkah, cucian beres"
+              title="Empat langkah, cucian selesai"
               description="Alur yang sama digunakan pelanggan dan tim operasional, sehingga tidak ada informasi yang terputus."
             />
           </Reveal>

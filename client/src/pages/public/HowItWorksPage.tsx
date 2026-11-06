@@ -37,8 +37,8 @@ const steps = [
 
 const faq = [
   {
-    q: 'Bagaimana cara membatalkan reservasi?',
-    a: 'Reservasi dapat dibatalkan dari halaman Reservasi saya selama masih memenuhi batas waktu pembatalan yang berlaku. Setelah batas waktu, hubungi admin untuk penanganan khusus.',
+    q: 'Bagaimana cara membatalkan pesanan?',
+    a: 'Pesanan dapat dibatalkan dari halaman Pesanan selama masih memenuhi batas waktu yang berlaku. Setelah batas waktu, hubungi admin untuk penanganan khusus.',
   },
   {
     q: 'Apakah harga bisa berubah setelah pesanan dibuat?',
@@ -55,6 +55,10 @@ const faq = [
   {
     q: 'Kapan saya bisa memberi ulasan?',
     a: 'Ulasan hanya dapat dibuat untuk pesanan milik Anda yang sudah berstatus selesai, dan satu pesanan hanya dapat diulas satu kali.',
+  },
+  {
+    q: 'Apa itu LRCMIS?',
+    a: 'LRCMIS adalah sistem manajemen laundry yang digunakan oleh tim operasional untuk mengelola reservasi, produksi, dan pengiriman cucian. Sistem ini juga menyediakan antarmuka bagi pelanggan untuk membuat reservasi dan melacak status pesanan mereka.',
   },
 ];
 
