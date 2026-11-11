@@ -201,12 +201,12 @@ export function PublicLayout() {
               </li>
               <li>
                 <Link to="https://github.com/Kisaragilice" className="transition hover:text-brand-700">
-                  Github profile
+                  Portfolio pengembang
                 </Link>
               </li>
               <li>
                 <Link to="https://raw.githubusercontent.com/Kisaragilice/LRCMIS-Laundry-Project/refs/heads/main/LICENSE" className="transition hover:text-brand-700">
-                  License
+                  Lisensi MIT
                 </Link>
               </li>
             </ul>
