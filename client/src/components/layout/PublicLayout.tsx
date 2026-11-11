@@ -200,7 +200,7 @@ export function PublicLayout() {
                 </Link>
               </li>
               <li>
-                <Link to="https://github.com/Kisaragilice" className="transition hover:text-brand-700">
+                <Link to="https://kisaragilice.my.id" className="transition hover:text-brand-700">
                   Portfolio pengembang
                 </Link>
               </li>
