@@ -127,6 +127,8 @@ export interface DeliveryTask {
   handoverRecipient: string | null;
   handoverConfirmedAt: string | null;
   addressSnapshot: string | null;
+  latitude: number | null;
+  longitude: number | null;
   contactPhone: string | null;
   order?: {
     id: string;

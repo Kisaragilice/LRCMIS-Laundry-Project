@@ -55,6 +55,8 @@ services:
       WHATSAPP_API_URL: ${WHATSAPP_API_URL:-}
       WHATSAPP_API_TOKEN: ${WHATSAPP_API_TOKEN:-}
       PAYMENT_GATEWAY_KEY: ${PAYMENT_GATEWAY_KEY:-}
+      NOMINATIM_BASE_URL: ${NOMINATIM_BASE_URL:-https://nominatim.openstreetmap.org}
+      GEOCODING_USER_AGENT: ${GEOCODING_USER_AGENT:-LRCMIS/1.0 (+https://lrcmis.my.id)}
       RUN_SEED: ${RUN_SEED:-true}
     # API is not exposed to the internet. Nginx proxies /api to this service.
     ports:
@@ -71,6 +73,9 @@ services:
     build:
       context: .
       dockerfile: client/Dockerfile
+      args:
+        VITE_MAP_TILE_URL: ${VITE_MAP_TILE_URL:-}
+        VITE_MAP_TILE_ATTRIBUTION: ${VITE_MAP_TILE_ATTRIBUTION:-}
     container_name: lrcmis-web
     restart: unless-stopped
     logging: *default-logging

@@ -229,6 +229,8 @@ export async function createTask(
       courierId: input.courierId ?? null,
       notes: input.notes ?? null,
       addressSnapshot: order.reservation?.address?.addressText ?? null,
+      latitude: order.reservation?.address?.latitude ?? null,
+      longitude: order.reservation?.address?.longitude ?? null,
       contactPhone: order.reservation?.address?.phone ?? null,
       status: 'assigned',
     },

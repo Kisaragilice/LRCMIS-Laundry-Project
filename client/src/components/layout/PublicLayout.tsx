@@ -7,6 +7,7 @@ import { Button, cn } from '../ui';
 import { useAuth } from '../../lib/auth';
 import { PageTransition } from '../motion/PageTransition';
 import { smoothEase, springSnappy } from '../../lib/motion';
+import { OUTLET } from '../../lib/outlet';
 
 const navItems = [
   { to: '/', label: 'Beranda' },
@@ -223,10 +224,10 @@ export function PublicLayout() {
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.15em] text-ink-400">Kontak</p>
             <ul className="mt-4 space-y-2 text-sm text-ink-600">
-              <li>Jl. Untung Suropati No.67, Kota Bandar Lampung</li>
-              <li><a href="tel:+6289834204779" className="transition hover:text-brand-700">+62 896 3420 4779</a></li>
-              <li><a href="mailto:tiaralaundry@lrcmis.my.id" className="transition hover:text-brand-700">tiaralaundry@lrcmis.my.id</a></li>
-              <li className="text-xs text-ink-400">Senin–Minggu, 07.00–21.00 WIB</li>
+              <li>{OUTLET.shortAddress}</li>
+              <li><a href={OUTLET.phoneHref} className="transition hover:text-brand-700">{OUTLET.phone}</a></li>
+              <li><a href={`mailto:${OUTLET.email}`} className="transition hover:text-brand-700">{OUTLET.email}</a></li>
+              <li className="text-xs text-ink-400">{OUTLET.hours}</li>
             </ul>
           </div>
         </div>

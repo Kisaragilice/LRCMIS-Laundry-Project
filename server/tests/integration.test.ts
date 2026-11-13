@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { DateTime } from 'luxon';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import {
@@ -920,5 +920,88 @@ describe('account management and primary admin protection', () => {
     const stillAuthenticated = await client(primaryAdmin, 'get', '/api/v1/users/me');
     expect(stillAuthenticated.status).toBe(200);
     expect(stillAuthenticated.body.data.isPrimaryAdmin).toBe(true);
+  });
+});
+
+describe('geocoding proxy and address coordinates', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('requires authentication before contacting Nominatim', async () => {
+    const response = await request(app).get('/api/v1/geocode/search?q=bandar%20lampung');
+    expect(response.status).toBe(401);
+  });
+
+  it('normalizes search results and sends an identifiable user agent', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify([
+          {
+            place_id: 33447547,
+            lat: '-5.3709676',
+            lon: '105.2547623',
+            display_name: 'Jalan Untung Suropati, Bandar Lampung, Lampung, Indonesia',
+            type: 'secondary',
+          },
+        ]),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const response = await client(customerA, 'get', '/api/v1/geocode/search?q=untung%20suropati&limit=3');
+    expect(response.status).toBe(200);
+    expect(response.body.data).toEqual([
+      {
+        id: '33447547',
+        displayName: 'Jalan Untung Suropati, Bandar Lampung, Lampung, Indonesia',
+        latitude: -5.3709676,
+        longitude: 105.2547623,
+        type: 'secondary',
+      },
+    ]);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toContain('nominatim.openstreetmap.org/search');
+    expect(url).toContain('countrycodes=id');
+    expect((init.headers as Record<string, string>)['User-Agent']).toMatch(/LRCMIS/);
+  });
+
+  it('normalizes reverse geocoding and validates coordinates', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          place_id: 33447547,
+          lat: '-5.3714192',
+          lon: '105.2545533',
+          display_name: 'Jalan Untung Suropati, Bandar Lampung, Lampung, Indonesia',
+          type: 'secondary',
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      ),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const invalid = await client(customerA, 'get', '/api/v1/geocode/reverse?lat=999&lng=105');
+    expect(invalid.status).toBe(400);
+
+    const response = await client(customerA, 'get', '/api/v1/geocode/reverse?lat=-5.3714192&lng=105.2545533');
+    expect(response.status).toBe(200);
+    expect(response.body.data.latitude).toBeCloseTo(-5.3714192);
+    expect(response.body.data.longitude).toBeCloseTo(105.2545533);
+  });
+
+  it('stores latitude and longitude together with a pickup address', async () => {
+    const response = await client(customerA, 'post', '/api/v1/users/me/addresses', {
+      label: 'Kantor',
+      addressText: 'Jl. Contoh No. 10, Bandar Lampung',
+      latitude: -5.3714192,
+      longitude: 105.2545533,
+    });
+    expect(response.status).toBe(201);
+    expect(response.body.data.latitude).toBeCloseTo(-5.3714192);
+    expect(response.body.data.longitude).toBeCloseTo(105.2545533);
   });
 });

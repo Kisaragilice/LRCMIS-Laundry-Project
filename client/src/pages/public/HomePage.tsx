@@ -19,8 +19,10 @@ import { Reveal } from '../../components/motion/Reveal';
 import { Stagger, StaggerItem } from '../../components/motion/Stagger';
 import { AmbientOrb } from '../../components/motion/AmbientOrb';
 import { Stars } from '../../components/common';
+import { MapPreview } from '../../components/map/MapPreview';
 import { useApi } from '../../lib/useApi';
 import { formatCurrency, unitLabel } from '../../lib/format';
+import { OUTLET } from '../../lib/outlet';
 import type { AppConfig, Review, Service } from '../../lib/types';
 
 const flow = [
@@ -368,39 +370,49 @@ export function HomePage() {
                   Outlet menerima drop-off sesuai slot pemesanan. Untuk pickup, pastikan alamat dan nomor telepon sudah
                   tersimpan di profil agar kurir dapat menghubungi Anda.
                 </p>
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                  <div className="flex items-start gap-3 rounded-xl bg-white/80 p-4">
-                    <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" aria-hidden="true" />
+                <div className="mt-6 overflow-hidden rounded-2xl border border-brand-100 shadow-sm">
+                  <MapPreview
+                    latitude={OUTLET.latitude}
+                    longitude={OUTLET.longitude}
+                    zoom={16}
+                    height={240}
+                    interactive
+                    ariaLabel="Peta lokasi LRCMIS Outlet"
+                  />
+                </div>
+                <div className="mt-5 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
                     <div>
-                      <p className="text-sm font-bold text-ink-900">Alamat outlet</p>
-                      <p className="mt-1 text-xs leading-relaxed text-ink-500">Jl. Untung Suropati No.67, Labuhan Ratu, Kec. Kedaton, Kota Bandar Lampung, Lampung 35142</p>
+                      <p className="text-xs font-bold uppercase tracking-wide text-ink-500">Alamat outlet</p>
+                      <p className="mt-0.5 text-sm leading-relaxed text-ink-700">{OUTLET.address}</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 rounded-xl bg-white/80 p-4">
-                    <Clock className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" aria-hidden="true" />
+                  <div className="flex items-start gap-3">
+                    <Clock className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
                     <div>
-                      <p className="text-sm font-bold text-ink-900">Jam operasional</p>
-                      <p className="mt-1 text-xs leading-relaxed text-ink-500">Setiap hari, 07.00–21.00 WIB</p>
+                      <p className="text-xs font-bold uppercase tracking-wide text-ink-500">Jam operasional</p>
+                      <p className="mt-0.5 text-sm text-ink-700">{OUTLET.hours}</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 rounded-xl bg-white/80 p-4">
-                    <Phone className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" aria-hidden="true" />
+                  <div className="flex items-start gap-3">
+                    <Phone className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
                     <div>
-                      <p className="text-sm font-bold text-ink-900">Telepon</p>
-                      <a href="tel:+6289834204779" className="mt-1 block text-xs font-semibold text-brand-700 hover:text-brand-900">+62 896 3420 4779</a>
+                      <p className="text-xs font-bold uppercase tracking-wide text-ink-500">Telepon</p>
+                      <a href={OUTLET.phoneHref} className="mt-0.5 block text-sm font-semibold text-brand-700 hover:text-brand-900">{OUTLET.phone}</a>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 rounded-xl bg-white/80 p-4">
-                    <Wallet className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" aria-hidden="true" />
+                  <div className="flex items-start gap-3">
+                    <Wallet className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
                     <div>
-                      <p className="text-sm font-bold text-ink-900">Pembayaran</p>
-                      <p className="mt-1 text-xs leading-relaxed text-ink-500">Tunai di outlet atau transfer bank.</p>
+                      <p className="text-xs font-bold uppercase tracking-wide text-ink-500">Pembayaran</p>
+                      <p className="mt-0.5 text-sm text-ink-700">Tunai di outlet atau transfer bank.</p>
                     </div>
                   </div>
                 </div>
                 <div className="mt-5 flex flex-wrap gap-2">
                   <Link to="/kontak"><Button variant="outline">Hubungi kami</Button></Link>
-                  <a href="https://maps.app.goo.gl/7nPENqqwSVoLRT7r7" target="_blank" rel="noreferrer">
+                  <a href={OUTLET.mapsUrl} target="_blank" rel="noreferrer">
                     <Button variant="ghost" icon={<MapPin className="h-4 w-4" />}>Buka di Google Maps</Button>
                   </a>
                 </div>

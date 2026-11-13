@@ -371,6 +371,8 @@ export async function receiveOrder(
           status: 'assigned',
           scheduledAt: new Date(Date.now() + estimatedHours * 3600_000),
           addressSnapshot: address?.addressText ?? null,
+          latitude: address?.latitude ?? null,
+          longitude: address?.longitude ?? null,
           contactPhone: address?.phone ?? null,
           notes: 'Pengantaran setelah pesanan selesai diproses',
         },

@@ -30,6 +30,10 @@ const envSchema = z.object({
   WHATSAPP_API_URL: z.string().optional(),
   WHATSAPP_API_TOKEN: z.string().optional(),
   PAYMENT_GATEWAY_KEY: z.string().optional(),
+  // Address search proxy (Leaflet/OpenStreetMap picker). No API key required,
+  // but Nominatim asks clients to identify themselves and cache responses.
+  NOMINATIM_BASE_URL: z.string().url().default('https://nominatim.openstreetmap.org'),
+  GEOCODING_USER_AGENT: z.string().trim().min(1).default('LRCMIS/1.0 (+https://lrcmis.my.id)'),
 });
 
 export type Env = z.infer<typeof envSchema>;

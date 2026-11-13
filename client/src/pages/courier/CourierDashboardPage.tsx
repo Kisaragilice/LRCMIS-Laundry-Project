@@ -30,6 +30,8 @@ import { useApi } from '../../lib/useApi';
 import { useAuth } from '../../lib/auth';
 import { api, ApiError } from '../../lib/api';
 import { useToast } from '../../lib/toast';
+import { MapPreview } from '../../components/map/MapPreview';
+import { googleMapsUrl, hasCoordinates } from '../../lib/geo';
 import {
   formatCurrency,
   formatDateTime,
@@ -94,7 +96,11 @@ export function CourierDashboardPage() {
     ? selected.addressSnapshot || selected.order?.address?.addressText || ''
     : '';
   const phone = selected ? selected.contactPhone || selected.order?.customer?.phone || '' : '';
-  const mapsUrl = address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : null;
+  const coordinates = {
+    latitude: selected?.latitude ?? null,
+    longitude: selected?.longitude ?? null,
+  };
+  const mapsUrl = googleMapsUrl({ ...coordinates, address });
 
   return (
     <div>
@@ -264,28 +270,47 @@ export function CourierDashboardPage() {
                 </div>
 
                 <div className="p-5">
-                  <div className="relative overflow-hidden rounded-2xl border border-brand-100 bg-brand-50">
-                    <div className="absolute inset-0 bg-soft-grid bg-grid opacity-70" aria-hidden="true" />
-                    <div className="relative flex min-h-[130px] flex-col items-center justify-center p-5 text-center">
-                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-brand-600 shadow-sm">
-                        <MapPin className="h-5 w-5" aria-hidden="true" />
-                      </span>
-                      <p className="mt-2 max-w-xs text-xs font-semibold leading-relaxed text-ink-700">
-                        {address || 'Alamat belum tersedia untuk tugas ini.'}
-                      </p>
-                      {mapsUrl && (
-                        <a href={mapsUrl} target="_blank" rel="noreferrer" className="mt-2">
-                          <Button size="sm" variant="outline" icon={<Navigation className="h-3.5 w-3.5" />}>
-                            Buka di Google Maps
-                          </Button>
-                        </a>
-                      )}
+                  {hasCoordinates(coordinates) ? (
+                    <div className="overflow-hidden rounded-2xl border border-brand-100">
+                      <MapPreview
+                        latitude={coordinates.latitude}
+                        longitude={coordinates.longitude}
+                        height={180}
+                        zoom={16}
+                        interactive
+                        ariaLabel="Peta lokasi tugas"
+                      />
                     </div>
+                  ) : (
+                    <div className="relative overflow-hidden rounded-2xl border border-brand-100 bg-brand-50">
+                      <div className="absolute inset-0 bg-soft-grid bg-grid opacity-70" aria-hidden="true" />
+                      <div className="relative flex min-h-[130px] flex-col items-center justify-center p-5 text-center">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-brand-600 shadow-sm">
+                          <MapPin className="h-5 w-5" aria-hidden="true" />
+                        </span>
+                        <p className="mt-2 max-w-xs text-xs font-semibold leading-relaxed text-ink-700">
+                          {address || 'Alamat belum tersedia untuk tugas ini.'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="mt-2 flex items-start justify-between gap-3">
+                    <p className="text-[10px] leading-relaxed text-ink-400">
+                      {hasCoordinates(coordinates)
+                        ? 'Pin lokasi dari snapshot pesanan. Gunakan tombol navigasi untuk membuka rute.'
+                        : 'Alamat berasal dari snapshot pesanan. Tautan navigasi memakai teks alamat.'}
+                    </p>
+                    {mapsUrl && (
+                      <a href={mapsUrl} target="_blank" rel="noreferrer" className="shrink-0">
+                        <Button size="sm" variant="outline" icon={<Navigation className="h-3.5 w-3.5" />}>
+                          Navigasi
+                        </Button>
+                      </a>
+                    )}
                   </div>
-                  <p className="mt-2 text-[10px] leading-relaxed text-ink-400">
-                    Peta interaktif belum terhubung. Alamat berasal dari snapshot pesanan; gunakan tautan peta untuk
-                    navigasi.
-                  </p>
+                  {!hasCoordinates(coordinates) && address && (
+                    <p className="mt-2 text-xs leading-relaxed text-ink-500">{address}</p>
+                  )}
 
                   <dl className="mt-4 space-y-3 text-sm">
                     <div className="flex items-start justify-between gap-3">

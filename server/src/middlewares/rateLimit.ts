@@ -32,6 +32,17 @@ export const authLimiter = rateLimit({
   message: { success: false, error: { code: 'RATE_LIMITED', message: 'Terlalu banyak percobaan. Coba lagi dalam 15 menit.' } },
 });
 
+// Address search runs while the customer is typing, so keep a per-minute
+// budget that is generous enough for normal use but protects Nominatim.
+export const geocodeLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: isProd ? 30 : 120,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  skip,
+  message: { success: false, error: { code: 'RATE_LIMITED', message: 'Terlalu banyak pencarian lokasi. Coba lagi sebentar.' } },
+});
+
 export const passwordResetLimiter = rateLimit({
   windowMs: resetWindowMs,
   limit: resetLimit,

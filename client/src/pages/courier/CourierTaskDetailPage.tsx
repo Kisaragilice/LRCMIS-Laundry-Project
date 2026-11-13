@@ -15,10 +15,12 @@ import {
   Textarea,
 } from '../../components/ui';
 import { KeyValue } from '../../components/common';
+import { MapPreview } from '../../components/map/MapPreview';
 import { useApi } from '../../lib/useApi';
 import { api, ApiError } from '../../lib/api';
 import { useToast } from '../../lib/toast';
 import { formatCurrency, formatDateTime, paymentStatusLabel, taskStatusLabel, taskTypeLabel } from '../../lib/format';
+import { googleMapsUrl, hasCoordinates } from '../../lib/geo';
 import type { DeliveryTask } from '../../lib/types';
 
 type ModalKind = 'completed' | 'failed' | null;
@@ -72,7 +74,8 @@ export function CourierTaskDetailPage() {
   const address = data.addressSnapshot || data.order?.address?.addressText || '';
   const phone = data.contactPhone || data.order?.customer?.phone || '';
   const customerName = data.order?.customer?.name ?? 'Pelanggan';
-  const mapsUrl = address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : null;
+  const coordinates = { latitude: data.latitude, longitude: data.longitude };
+  const mapsUrl = googleMapsUrl({ ...coordinates, address });
 
   return (
     <div>
@@ -104,6 +107,18 @@ export function CourierTaskDetailPage() {
                   </a>
                 )}
               </div>
+              {hasCoordinates(coordinates) && (
+                <div className="overflow-hidden rounded-xl border border-ink-100">
+                  <MapPreview
+                    latitude={coordinates.latitude}
+                    longitude={coordinates.longitude}
+                    height={210}
+                    zoom={16}
+                    interactive
+                    ariaLabel="Peta lokasi pengantaran"
+                  />
+                </div>
+              )}
               <div className="flex items-center gap-3 rounded-xl bg-ink-50 px-4 py-3">
                 <UserRound className="h-5 w-5 shrink-0 text-brand-700" />
                 <div className="flex-1">

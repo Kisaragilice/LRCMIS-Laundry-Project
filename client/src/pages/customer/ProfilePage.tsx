@@ -14,14 +14,25 @@ import {
   Textarea,
 } from '../../components/ui';
 import { Note } from '../../components/common';
+import { LocationPicker } from '../../components/map/LocationPicker';
+import { MapPreview } from '../../components/map/MapPreview';
 import { useAuth } from '../../lib/auth';
 import { useApi } from '../../lib/useApi';
 import { api, ApiError } from '../../lib/api';
 import { useToast } from '../../lib/toast';
 import { formatDate } from '../../lib/format';
+import { hasCoordinates } from '../../lib/geo';
 import type { Address } from '../../lib/types';
 
-const emptyAddress = { label: 'Rumah', recipientName: '', phone: '', addressText: '', isDefault: false };
+const emptyAddress = {
+  label: 'Rumah',
+  recipientName: '',
+  phone: '',
+  addressText: '',
+  isDefault: false,
+  latitude: null as number | null,
+  longitude: null as number | null,
+};
 
 export function ProfilePage() {
   const { user, refresh } = useAuth();
@@ -96,6 +107,8 @@ export function ProfilePage() {
             phone: address.phone ?? '',
             addressText: address.addressText,
             isDefault: address.isDefault,
+            latitude: address.latitude,
+            longitude: address.longitude,
           }
         : emptyAddress,
     );
@@ -112,6 +125,8 @@ export function ProfilePage() {
       phone: addressForm.phone.trim() || undefined,
       addressText: addressForm.addressText.trim(),
       isDefault: addressForm.isDefault,
+      latitude: addressForm.latitude,
+      longitude: addressForm.longitude,
     };
     try {
       if (editing) await api.patch(`/users/me/addresses/${editing.id}`, payload);
@@ -206,6 +221,17 @@ export function ProfilePage() {
                         {(address.recipientName || address.phone) && (
                           <p className="mt-1 text-xs text-ink-400">{[address.recipientName, address.phone].filter(Boolean).join(' · ')}</p>
                         )}
+                        {hasCoordinates(address) && (
+                          <div className="mt-3 overflow-hidden rounded-xl border border-ink-100">
+                            <MapPreview
+                              latitude={address.latitude}
+                              longitude={address.longitude}
+                              height={140}
+                              zoom={16}
+                              ariaLabel={`Peta ${address.label || 'alamat pickup'}`}
+                            />
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-1">
                         <button type="button" onClick={() => openAddress(address)} className="rounded-lg p-2 text-ink-400 hover:bg-ink-50 hover:text-brand-700" aria-label="Edit alamat">
@@ -263,7 +289,7 @@ export function ProfilePage() {
         </div>
       </div>
 
-      <Modal open={addressOpen} onClose={() => setAddressOpen(false)} title={editing ? 'Edit alamat' : 'Tambah alamat'} description="Alamat lengkap membantu kurir menemukan lokasi.">
+      <Modal open={addressOpen} onClose={() => setAddressOpen(false)} title={editing ? 'Edit alamat' : 'Tambah alamat'} description="Alamat lengkap membantu kurir menemukan lokasi." size="lg">
         <div className="space-y-4">
           {addressError && <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{addressError}</div>}
           <div className="grid gap-4 sm:grid-cols-2">
@@ -276,6 +302,14 @@ export function ProfilePage() {
           </div>
           <Field label="Nomor telepon" htmlFor="addressPhone" hint="Format 08xx">
             <Input id="addressPhone" type="tel" value={addressForm.phone} onChange={(event) => setAddressForm({ ...addressForm, phone: event.target.value })} placeholder="081234567890" />
+          </Field>
+          <Field label="Titik lokasi di peta" hint="Cari alamat atau geser pin. Pin membantu kurir menemukan lokasi tepat.">
+            <LocationPicker
+              latitude={addressForm.latitude}
+              longitude={addressForm.longitude}
+              addressText={addressForm.addressText}
+              onChange={(patch) => setAddressForm((current) => ({ ...current, ...patch }))}
+            />
           </Field>
           <Field label="Alamat lengkap" htmlFor="addressText" required hint="Minimal 10 karakter">
             <Textarea id="addressText" value={addressForm.addressText} onChange={(event) => setAddressForm({ ...addressForm, addressText: event.target.value })} placeholder="Jalan, nomor, RT/RW, kelurahan, kecamatan, kota, kode pos" />

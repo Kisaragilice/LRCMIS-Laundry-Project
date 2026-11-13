@@ -2,6 +2,8 @@ import { Clock, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import { Card } from '../../components/ui';
 import { Reveal } from '../../components/motion/Reveal';
 import { Stagger, StaggerItem } from '../../components/motion/Stagger';
+import { MapPreview } from '../../components/map/MapPreview';
+import { OUTLET } from '../../lib/outlet';
 
 export function ContactPage() {
   return (
@@ -27,22 +29,22 @@ export function ContactPage() {
             {
               icon: MapPin,
               title: 'Outlet utama',
-              lines: ['Jl. Untung Suropati No.67, Kota Bandar Lampung'],
+              lines: [OUTLET.shortAddress],
             },
             {
               icon: Phone,
               title: 'Telepon / WhatsApp',
-              lines: ['+62 896 3420 4779', 'Senin–Minggu, 07.00–21.00 WIB'],
+              lines: [OUTLET.phone, OUTLET.hours],
             },
             {
               icon: Mail,
               title: 'Email',
-              lines: ['tiaralaundry@lrcmis.my.id', 'Balasan dalam 1×24 jam kerja'],
+              lines: [OUTLET.email, 'Balasan dalam 1×24 jam kerja'],
             },
             {
               icon: Clock,
               title: 'Jam operasional',
-              lines: ['Setiap hari 07.00–21.00 WIB', 'Slot terakhir 19.00 WIB'],
+              lines: [OUTLET.hours, 'Slot terakhir 19.00 WIB'],
             },
           ].map((item) => (
             <StaggerItem key={item.title} className="h-full">
@@ -92,20 +94,25 @@ export function ContactPage() {
               Parkir tersedia. Silakan datang sesuai slot reservasi agar tidak menunggu.
             </p>
           </div>
-          <div className="relative min-h-72 flex-1 bg-contact-panel bg-panel p-6">
-            <div className="relative flex h-full flex-col items-center justify-center text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-900 text-white shadow-soft">
-                <MapPin className="h-7 w-7" />
+          <div className="relative min-h-72 flex-1">
+            <MapPreview
+              latitude={OUTLET.latitude}
+              longitude={OUTLET.longitude}
+              zoom={16}
+              interactive
+              className="absolute inset-0"
+              ariaLabel="Peta lokasi LRCMIS Outlet"
+            />
+            <div className="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-start justify-between gap-2">
+              <div className="rounded-xl bg-white/95 px-3 py-2 shadow-sm">
+                <p className="font-display text-sm font-semibold text-brand-950">{OUTLET.name}</p>
+                <p className="mt-0.5 max-w-[15rem] text-[11px] leading-relaxed text-ink-600">{OUTLET.shortAddress}</p>
               </div>
-              <p className="mt-3 font-display text-lg font-semibold text-brand-950">LRCMIS Outlet</p>
-              <p className="mt-1 max-w-xs text-sm text-ink-600">
-                Jl. Untung Suropati No.67, Kota Bandar Lampung
-              </p>
               <a
-                href="https://maps.app.goo.gl/7nPENqqwSVoLRT7r7"
+                href={OUTLET.mapsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-4 rounded-xl bg-white px-4 py-2 text-xs font-bold text-brand-800 shadow-sm hover:bg-brand-50"
+                className="pointer-events-auto rounded-xl bg-white px-3 py-2 text-xs font-bold text-brand-800 shadow-sm hover:bg-brand-50"
               >
                 Buka di Google Maps
               </a>

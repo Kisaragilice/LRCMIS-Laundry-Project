@@ -4,6 +4,7 @@ import { usersRouter } from './users.routes';
 import { catalogRouter, customerRouter } from './public.routes';
 import { adminRouter, courierRouter, publicRouter, staffRouter } from './admin.routes';
 import { chatRouter } from './chat.routes';
+import { geocodeRouter } from './geocode.routes';
 
 export const apiRouter = Router();
 
@@ -17,6 +18,7 @@ apiRouter.use('/', catalogRouter);
 apiRouter.use('/', publicRouter);
 apiRouter.use('/', customerRouter);
 apiRouter.use('/chat', chatRouter);
+apiRouter.use('/geocode', geocodeRouter);
 apiRouter.use('/admin', adminRouter);
 apiRouter.use('/staff', staffRouter);
 apiRouter.use('/courier', courierRouter);

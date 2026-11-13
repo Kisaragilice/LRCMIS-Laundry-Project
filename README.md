@@ -17,6 +17,7 @@ pembayaran yang dapat diaudit, promosi, laporan, chat, dan dashboard berbasis ro
 ### Publik
 
 - Landing page, daftar layanan, alur pemesanan, kontak, dan ulasan unggulan.
+- Peta lokasi outlet interaktif (Leaflet/OpenStreetMap) di beranda dan halaman kontak.
 - Register, login, lupa password, dan reset password.
 - Reset password dikirim melalui email Resend. Token reset tidak pernah ditampilkan di browser
   pada konfigurasi production.
@@ -29,6 +30,7 @@ pembayaran yang dapat diaudit, promosi, laporan, chat, dan dashboard berbasis ro
 - Daftar pesanan, detail pesanan, rincian harga, status pembayaran, dan timeline.
 - Riwayat pembayaran dan instruksi pembayaran.
 - Promosi, validasi voucher, ulasan, komplain, profil, buku alamat, dan ubah password.
+- Buku alamat pickup dengan pencarian alamat dan pin peta; koordinat tersimpan bersama alamat.
 - Chat dengan admin. Chat dengan kurir tersedia selama pesanan dalam proses pengantaran.
 
 ### Admin
@@ -55,6 +57,7 @@ pembayaran yang dapat diaudit, promosi, laporan, chat, dan dashboard berbasis ro
 - Daftar task pickup/delivery yang ditugaskan.
 - Transisi terima → mulai → selesai/gagal.
 - Konfirmasi penerima, snapshot alamat, tautan telepon, dan chat pelanggan saat pengantaran.
+- Peta titik pickup/pengantaran dan tombol navigasi berbasis koordinat.
 
 ### Owner
 
@@ -196,6 +199,8 @@ audit log tetap disimpan. Administrator utama dan akun sah tidak disentuh.
 | `EMAIL_FROM` | Pengirim email pada domain terverifikasi | opsional di dev |
 | `WHATSAPP_API_URL` / `WHATSAPP_API_TOKEN` | Integrasi WhatsApp opsional | kosong |
 | `PAYMENT_GATEWAY_KEY` | Reserved untuk payment gateway | kosong |
+| `NOMINATIM_BASE_URL` | Endpoint proxy pencarian alamat | `https://nominatim.openstreetmap.org` |
+| `GEOCODING_USER_AGENT` | Identitas klien Nominatim | `LRCMIS/1.0 (+https://lrcmis.my.id)` |
 | `PRIMARY_ADMIN_EMAIL` | Email admin untuk script setup | `admin@lrcmis.id` |
 | `PRIMARY_ADMIN_NAME` | Nama admin untuk script setup | `Administrator Utama` |
 | `PRIMARY_ADMIN_PASSWORD` | Password eksplisit untuk script setup | dibuat otomatis |
@@ -224,6 +229,10 @@ Compose karena Compose membaca `.env` dari root proyek.
 | `API_PORT` | tidak | Default `4000`, bind localhost |
 | `POSTGRES_PORT` | tidak | Default `5433`, bind localhost |
 | `RUN_SEED` | tidak | Default `true`; seed referensi idempotent |
+| `NOMINATIM_BASE_URL` | tidak | Default `https://nominatim.openstreetmap.org` |
+| `GEOCODING_USER_AGENT` | tidak | Identitas klien Nominatim; isi URL deployment Anda |
+| `VITE_MAP_TILE_URL` | tidak | Build arg tile peta; kosong = tile OpenStreetMap |
+| `VITE_MAP_TILE_ATTRIBUTION` | tidak | Build arg atribusi tile kustom |
 
 Pada `NODE_ENV=production`, API menolak start jika:
 
@@ -249,6 +258,28 @@ mengganti IP LAN atau port web tidak memerlukan perubahan `CLIENT_ORIGIN`. Dafta
 
 Link di email memakai `PUBLIC_APP_URL`, bukan `CLIENT_ORIGIN`. Saat memakai Cloudflare Tunnel,
 atur keduanya ke domain publik agar link reset tidak memakai IP LAN.
+
+### Peta dan pencarian alamat (Leaflet + OpenStreetMap)
+
+Peta lokasi outlet, pemilih titik pickup, dan peta tugas kurir memakai **Leaflet** dengan tile
+**OpenStreetMap**. Tidak ada akun, API key, atau kartu kredit yang perlu disiapkan.
+
+- Pencarian alamat memakai **Nominatim** melalui proxy API (`/api/v1/geocode/search` dan
+  `/api/v1/geocode/reverse`), bukan langsung dari browser.
+- Server mengirim `User-Agent` yang dapat diidentifikasi, memakai `Accept-Language: id`, membatasi
+  permintaan per menit, dan menyimpan cache 10 menit agar sesuai kebijakan Nominatim.
+- Ganti `GEOCODING_USER_AGENT` menjadi URL deployment Anda agar operator Nominatim dapat
+  menghubungi Anda bila diperlukan.
+- Tile OpenStreetMap gratis cocok untuk skala kecil–menengah. Untuk traffic tinggi, arahkan
+  `VITE_MAP_TILE_URL` dan `VITE_MAP_TILE_ATTRIBUTION` ke penyedia tile seperti MapTiler, Stadia,
+  atau Carto, lalu rebuild image web (`docker compose build web`).
+- Atribusi OpenStreetMap wajib tetap terlihat di peta. Jangan menutupinya dengan overlay.
+- Tombol **Lokasi saya** memakai Geolocation API browser. Browser hanya mengizinkannya pada
+  origin aman: **HTTPS** atau `localhost`. Jika dashboard diakses lewat `http://IP-LAN`, popup
+  izin tidak akan muncul; gunakan pencarian alamat atau pin manual, atau akses lewat domain HTTPS.
+
+Titik outlet disimpan di `client/src/lib/outlet.ts`. Jika lokasi outlet berubah, perbarui
+`latitude`, `longitude`, alamat, dan tautan Google Maps di satu file tersebut.
 
 ---
 

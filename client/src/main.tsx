@@ -6,6 +6,7 @@ import App from './App';
 import { AuthProvider } from './lib/auth';
 import { ToastProvider } from './lib/toast';
 import { transitionQuick } from './lib/motion';
+import 'leaflet/dist/leaflet.css';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(

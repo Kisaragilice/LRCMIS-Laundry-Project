@@ -403,6 +403,8 @@ model DeliveryTask {
   completedAt         DateTime?  @map("completed_at") @db.Timestamptz(3)
   // EXT: address/contact snapshot so later edits do not alter dispatched task data.
   addressSnapshot     String?    @map("address_snapshot")
+  latitude            Decimal?   @db.Decimal(10, 7)
+  longitude           Decimal?   @db.Decimal(10, 7)
   contactPhone        String?    @map("contact_phone") @db.VarChar(20)
   handoverRecipient   String?    @map("handover_recipient") @db.VarChar(100)
   handoverConfirmedAt DateTime?  @map("handover_confirmed_at") @db.Timestamptz(3)

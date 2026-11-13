@@ -238,6 +238,8 @@ export function taskDto(task: DeliveryTask & {
     handoverRecipient: task.handoverRecipient,
     handoverConfirmedAt: iso(task.handoverConfirmedAt),
     addressSnapshot: task.addressSnapshot,
+    latitude: task.latitude ? num(task.latitude) : null,
+    longitude: task.longitude ? num(task.longitude) : null,
     contactPhone: task.contactPhone,
     order: task.order
       ? {

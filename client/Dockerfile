@@ -8,6 +8,10 @@ COPY client/package.json ./client/package.json
 RUN npm ci
 
 COPY client ./client
+ARG VITE_MAP_TILE_URL=
+ARG VITE_MAP_TILE_ATTRIBUTION=
+ENV VITE_MAP_TILE_URL=$VITE_MAP_TILE_URL
+ENV VITE_MAP_TILE_ATTRIBUTION=$VITE_MAP_TILE_ATTRIBUTION
 RUN npm run build -w client
 
 FROM nginx:1.27-alpine

@@ -26,11 +26,15 @@ import {
   Textarea,
 } from '../../components/ui';
 import { Note } from '../../components/common';
+import { LocationPicker } from '../../components/map/LocationPicker';
+import { MapPreview } from '../../components/map/MapPreview';
 import { useApi } from '../../lib/useApi';
 import { useAction } from '../../lib/useApi';
 import { api, ApiError } from '../../lib/api';
 import { useToast } from '../../lib/toast';
 import { formatCurrency, formatDate, unitLabel, weekday } from '../../lib/format';
+import { hasCoordinates } from '../../lib/geo';
+import { OUTLET } from '../../lib/outlet';
 import type { Address, AppConfig, Reservation, Service, TimeSlot } from '../../lib/types';
 
 const steps = ['Layanan', 'Metode', 'Jadwal', 'Konfirmasi'];
@@ -52,7 +56,15 @@ export function NewReservationPage() {
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [addressModal, setAddressModal] = useState(false);
-  const [addressForm, setAddressForm] = useState({ label: 'Rumah', recipientName: '', phone: '', addressText: '', isDefault: false });
+  const [addressForm, setAddressForm] = useState({
+    label: 'Rumah',
+    recipientName: '',
+    phone: '',
+    addressText: '',
+    isDefault: false,
+    latitude: null as number | null,
+    longitude: null as number | null,
+  });
   const [savingAddress, setSavingAddress] = useState(false);
 
   const selectedServices = useMemo(
@@ -135,7 +147,15 @@ export function NewReservationPage() {
       addresses.refetch();
       setAddressId(created.id);
       setAddressModal(false);
-      setAddressForm({ label: 'Rumah', recipientName: '', phone: '', addressText: '', isDefault: false });
+      setAddressForm({
+        label: 'Rumah',
+        recipientName: '',
+        phone: '',
+        addressText: '',
+        isDefault: false,
+        latitude: null,
+        longitude: null,
+      });
       toast('Alamat berhasil ditambahkan');
     } catch (error) {
       toast(error instanceof ApiError ? error.message : 'Gagal menyimpan alamat', 'error');
@@ -406,7 +426,20 @@ export function NewReservationPage() {
                     <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Metode</p>
                     <p className="mt-1 text-sm font-semibold text-ink-900">{pickupType === 'pickup' ? 'Pickup & delivery' : 'Drop-off'}</p>
                     {pickupType === 'pickup' && selectedAddress && (
-                      <p className="mt-1 text-xs leading-relaxed text-ink-500">{selectedAddress.addressText}</p>
+                      <>
+                        <p className="mt-1 text-xs leading-relaxed text-ink-500">{selectedAddress.addressText}</p>
+                        {hasCoordinates(selectedAddress) && (
+                          <div className="mt-3 overflow-hidden rounded-lg border border-ink-100">
+                            <MapPreview
+                              latitude={selectedAddress.latitude}
+                              longitude={selectedAddress.longitude}
+                              height={130}
+                              zoom={16}
+                              ariaLabel="Peta alamat pickup terpilih"
+                            />
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                   <div className="rounded-xl border border-ink-100 p-4">
@@ -475,7 +508,7 @@ export function NewReservationPage() {
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" />
               <div>
                 <p className="text-sm font-bold text-ink-900">Outlet</p>
-                <p className="mt-1 text-xs leading-relaxed text-ink-500">Jl. Untung Suropati, Kota Bandar Lampung</p>
+                <p className="mt-1 text-xs leading-relaxed text-ink-500">{OUTLET.shortAddress}</p>
               </div>
             </div>
             <div className="mt-3 flex items-start gap-2.5">
@@ -489,7 +522,7 @@ export function NewReservationPage() {
         </div>
       </div>
 
-      <Modal open={addressModal} onClose={() => setAddressModal(false)} title="Tambah alamat" description="Alamat ini dapat dipakai untuk pickup berikutnya.">
+      <Modal open={addressModal} onClose={() => setAddressModal(false)} title="Tambah alamat" description="Alamat ini dapat dipakai untuk pickup berikutnya." size="lg">
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Label" htmlFor="label">
@@ -501,6 +534,14 @@ export function NewReservationPage() {
           </div>
           <Field label="Nomor telepon" htmlFor="addressPhone" hint="Format 08xx">
             <Input id="addressPhone" type="tel" value={addressForm.phone} onChange={(e) => setAddressForm({ ...addressForm, phone: e.target.value })} placeholder="081234567890" />
+          </Field>
+          <Field label="Titik lokasi di peta" hint="Cari alamat atau geser pin. Pin membantu kurir menemukan lokasi tepat.">
+            <LocationPicker
+              latitude={addressForm.latitude}
+              longitude={addressForm.longitude}
+              addressText={addressForm.addressText}
+              onChange={(patch) => setAddressForm((current) => ({ ...current, ...patch }))}
+            />
           </Field>
           <Field label="Alamat lengkap" htmlFor="addressText" required>
             <Textarea id="addressText" value={addressForm.addressText} onChange={(e) => setAddressForm({ ...addressForm, addressText: e.target.value })} placeholder="Jalan, nomor, RT/RW, kelurahan, kecamatan, kota, kode pos" />
